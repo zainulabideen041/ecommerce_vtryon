@@ -20,6 +20,7 @@ function AuthRegister() {
 
   function onSubmit(event) {
     event.preventDefault();
+    console.log(formData);
     dispatch(registerUser(formData)).then((data) => {
       if (data?.payload?.success) {
         toast({

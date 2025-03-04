@@ -4,7 +4,7 @@ const User = require("../../models/User");
 
 // REGISTER USER CONTROLLER
 const register = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { userName, email, password } = req.body;
   try {
     const checkUser = await User.findOne({ email });
     if (checkUser)
@@ -15,7 +15,7 @@ const register = async (req, res) => {
 
     const hashPass = await bcrypt.hash(password, 12);
 
-    const newUser = new User({ username, email, password: hashPass });
+    const newUser = new User({ userName, email, password: hashPass });
     await newUser.save();
 
     res.status(200).json({
