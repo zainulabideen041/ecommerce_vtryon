@@ -1,6 +1,6 @@
 import axios from "axios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-const baseURL = "http://localhost:5000";
+const baseURL = "ecomtryonbackend.vercel.app";
 
 const initialState = {
   cartItems: [],

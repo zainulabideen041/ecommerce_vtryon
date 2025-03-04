@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-const baseURL = "http://localhost:5000";
+const baseURL = "ecomtryonbackend.vercel.app";
 import axios from "axios";
 
 const initialState = {
