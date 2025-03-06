@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "https://ecomtryonbackend.vercel.app";
+const baseURL = "https://ecomtryonbackend.vercel.app/api/auth";
 
 const initialState = {
   isAuthenticated: false,
@@ -12,13 +12,9 @@ export const registerUser = createAsyncThunk(
   "/auth/register",
 
   async (formData) => {
-    const response = await axios.post(
-      `${baseURL}/api/auth/register`,
-      formData,
-      {
-        withCredentials: true,
-      }
-    );
+    const response = await axios.post(`${baseURL}/register`, formData, {
+      withCredentials: true,
+    });
 
     return response.data;
   }
@@ -28,7 +24,7 @@ export const loginUser = createAsyncThunk(
   "/auth/login",
 
   async (formData) => {
-    const response = await axios.post(`${baseURL}/api/auth/login`, formData, {
+    const response = await axios.post(`${baseURL}/login`, formData, {
       withCredentials: true,
     });
 
@@ -41,7 +37,7 @@ export const logoutUser = createAsyncThunk(
 
   async () => {
     const response = await axios.post(
-      `${baseURL}/api/auth/logout`,
+      `${baseURL}/logout`,
       {},
       {
         withCredentials: true,
@@ -56,7 +52,7 @@ export const checkAuth = createAsyncThunk(
   "/auth/checkauth",
 
   async () => {
-    const response = await axios.get(`${baseURL}/api/auth/check-auth`, {
+    const response = await axios.get(`${baseURL}/check-auth`, {
       withCredentials: true,
       headers: {
         "Cache-Control":

@@ -99,7 +99,9 @@ function ShoppingHome() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prevSlide) => (prevSlide + 1) % featureImageList.length);
+      setCurrentSlide(
+        (prevSlide) => (prevSlide + 1) % featureImageList?.length
+      );
     }, 15000);
 
     return () => clearInterval(timer);

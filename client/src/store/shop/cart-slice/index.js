@@ -1,6 +1,6 @@
 import axios from "axios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-const baseURL = "ecomtryonbackend.vercel.app";
+const baseURL = "https://ecomtryonbackend.vercel.app/api/shop/cart";
 
 const initialState = {
   cartItems: [],
@@ -10,7 +10,7 @@ const initialState = {
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
   async ({ userId, productId, quantity }) => {
-    const response = await axios.post(`${baseURL}/api/shop/cart/add`, {
+    const response = await axios.post(`${baseURL}/add`, {
       userId,
       productId,
       quantity,
@@ -23,7 +23,7 @@ export const addToCart = createAsyncThunk(
 export const fetchCartItems = createAsyncThunk(
   "cart/fetchCartItems",
   async (userId) => {
-    const response = await axios.get(`${baseURL}/api/shop/cart/get/${userId}`);
+    const response = await axios.get(`${baseURL}/get/${userId}`);
 
     return response.data;
   }
@@ -32,9 +32,7 @@ export const fetchCartItems = createAsyncThunk(
 export const deleteCartItem = createAsyncThunk(
   "cart/deleteCartItem",
   async ({ userId, productId }) => {
-    const response = await axios.delete(
-      `${baseURL}/api/shop/cart/${userId}/${productId}`
-    );
+    const response = await axios.delete(`${baseURL}/${userId}/${productId}`);
 
     return response.data;
   }
@@ -43,7 +41,7 @@ export const deleteCartItem = createAsyncThunk(
 export const updateCartQuantity = createAsyncThunk(
   "cart/updateCartQuantity",
   async ({ userId, productId, quantity }) => {
-    const response = await axios.put(`${baseURL}/api/shop/cart/update-cart`, {
+    const response = await axios.put(`${baseURL}/update-cart`, {
       userId,
       productId,
       quantity,

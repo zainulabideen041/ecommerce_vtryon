@@ -11,8 +11,6 @@ function AdminDashboard() {
   const dispatch = useDispatch();
   const { featureImageList } = useSelector((state) => state.commonFeature);
 
-  console.log(uploadedImageUrl, "uploadedImageUrl");
-
   function handleUploadFeatureImage() {
     dispatch(addFeatureImage(uploadedImageUrl)).then((data) => {
       if (data?.payload?.success) {
@@ -26,8 +24,6 @@ function AdminDashboard() {
   useEffect(() => {
     dispatch(getFeatureImages());
   }, [dispatch]);
-
-  console.log(featureImageList, "featureImageList");
 
   return (
     <div>
@@ -46,8 +42,8 @@ function AdminDashboard() {
       </Button>
       <div className="flex flex-col gap-4 mt-5">
         {featureImageList && featureImageList.length > 0
-          ? featureImageList.map((featureImgItem) => (
-              <div className="relative">
+          ? featureImageList.map((featureImgItem, index) => (
+              <div className="relative" key={index}>
                 <img
                   src={featureImgItem.image}
                   className="w-full h-[300px] object-cover rounded-t-lg"

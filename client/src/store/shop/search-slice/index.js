@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-const baseURL = "ecomtryonbackend.vercel.app";
+const baseURL = "https://ecomtryonbackend.vercel.app/api/shop/search";
 import axios from "axios";
 
 const initialState = {
@@ -10,7 +10,7 @@ const initialState = {
 export const getSearchResults = createAsyncThunk(
   "/order/getSearchResults",
   async (keyword) => {
-    const response = await axios.get(`${baseURL}/api/shop/search/${keyword}`);
+    const response = await axios.get(`${baseURL}/${keyword}`);
 
     return response.data;
   }

@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "ecomtryonbackend.vercel.app";
+const baseURL = "https://ecomtryonbackend.vercel.app/api/shop/products";
 
 const initialState = {
   isLoading: false,
@@ -16,9 +16,7 @@ export const fetchAllFilteredProducts = createAsyncThunk(
       sortBy: sortParams,
     });
 
-    const result = await axios.get(`${baseURL}/api/shop/products/get?${query}`);
-
-    console.log(result);
+    const result = await axios.get(`${baseURL}/get?${query}`);
 
     return result?.data;
   }
@@ -27,7 +25,7 @@ export const fetchAllFilteredProducts = createAsyncThunk(
 export const fetchProductDetails = createAsyncThunk(
   "/products/fetchProductDetails",
   async (id) => {
-    const result = await axios.get(`${baseURL}/api/shop/products/get/${id}`);
+    const result = await axios.get(`${baseURL}/get/${id}`);
 
     return result?.data;
   }

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "ecomtryonbackend.vercel.app";
+const baseURL = "https://ecomtryonbackend.vercel.app/api/shop/review";
 
 const initialState = {
   isLoading: false,
@@ -10,17 +10,14 @@ const initialState = {
 export const addReview = createAsyncThunk(
   "/order/addReview",
   async (formdata) => {
-    const response = await axios.post(
-      `${baseURL}/api/shop/review/add`,
-      formdata
-    );
+    const response = await axios.post(`${baseURL}/add`, formdata);
 
     return response.data;
   }
 );
 
 export const getReviews = createAsyncThunk("/order/getReviews", async (id) => {
-  const response = await axios.get(`${baseURL}/api/shop/review/${id}`);
+  const response = await axios.get(`${baseURL}/${id}`);
 
   return response.data;
 });

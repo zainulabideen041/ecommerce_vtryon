@@ -54,7 +54,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       {
         id: user._id,
-        username: user.username,
+        username: user.userName,
         email: user.email,
         role: user.role,
       },
@@ -62,16 +62,25 @@ const login = async (req, res) => {
       { expiresIn: "60m" }
     );
 
-    res.cookie("token", token, { httpOnly: true, secure: false }).json({
-      success: true,
-      message: "Login successful",
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    // Set 'secure' to true when HTTPS is used (which Vercel uses)
+    const isProduction = process.env.NODE_ENV === "production"; // Check if in production environment (Vercel)
+
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: isProduction, // Use secure cookies only in production (HTTPS)
+        sameSite: "Strict", // Optional: adds additional protection to prevent CSRF attacks
+      })
+      .json({
+        success: true,
+        message: "Login successful",
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+        },
+      });
   } catch (error) {
     console.log(error);
     res.status(500).json({

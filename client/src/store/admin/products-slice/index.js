@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "ecomtryonbackend.vercel.app";
+const baseURL = "https://ecomtryonbackend.vercel.app/api/admin/products";
 
 const initialState = {
   isLoading: false,
@@ -10,15 +10,11 @@ const initialState = {
 export const addNewProduct = createAsyncThunk(
   "/products/addnewproduct",
   async (formData) => {
-    const result = await axios.post(
-      `${baseURL}/api/admin/products/add`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const result = await axios.post(`${baseURL}/add`, formData, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     return result?.data;
   }
@@ -27,7 +23,7 @@ export const addNewProduct = createAsyncThunk(
 export const fetchAllProducts = createAsyncThunk(
   "/products/fetchAllProducts",
   async () => {
-    const result = await axios.get(`${baseURL}/api/admin/products/get`);
+    const result = await axios.get(`${baseURL}/get`);
 
     return result?.data;
   }
@@ -36,15 +32,11 @@ export const fetchAllProducts = createAsyncThunk(
 export const editProduct = createAsyncThunk(
   "/products/editProduct",
   async ({ id, formData }) => {
-    const result = await axios.put(
-      `${baseURL}/api/admin/products/edit/${id}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const result = await axios.put(`${baseURL}/edit/${id}`, formData, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     return result?.data;
   }
@@ -53,9 +45,7 @@ export const editProduct = createAsyncThunk(
 export const deleteProduct = createAsyncThunk(
   "/products/deleteProduct",
   async (id) => {
-    const result = await axios.delete(
-      `${baseURL}/api/admin/products/delete/${id}`
-    );
+    const result = await axios.delete(`${baseURL}/delete/${id}`);
 
     return result?.data;
   }

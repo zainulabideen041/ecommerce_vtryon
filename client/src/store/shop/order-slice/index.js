@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "ecomtryonbackend.vercel.app";
+const baseURL = "https://ecomtryonbackend.vercel.app/api/shop/order";
 
 const initialState = {
   // approvalURL: null,
@@ -13,10 +13,7 @@ const initialState = {
 export const createNewOrder = createAsyncThunk(
   "/order/createNewOrder",
   async (orderData) => {
-    const response = await axios.post(
-      `${baseURL}/api/shop/order/create`,
-      orderData
-    );
+    const response = await axios.post(`${baseURL}/create`, orderData);
 
     return response.data;
   }
@@ -25,7 +22,7 @@ export const createNewOrder = createAsyncThunk(
 export const capturePayment = createAsyncThunk(
   "/order/capturePayment",
   async ({ paymentId, payerId, orderId }) => {
-    const response = await axios.post(`${baseURL}/api/shop/order/capture`, {
+    const response = await axios.post(`${baseURL}/capture`, {
       paymentId,
       payerId,
       orderId,
@@ -38,9 +35,7 @@ export const capturePayment = createAsyncThunk(
 export const getAllOrdersByUserId = createAsyncThunk(
   "/order/getAllOrdersByUserId",
   async (userId) => {
-    const response = await axios.get(
-      `${baseURL}/api/shop/order/list/${userId}`
-    );
+    const response = await axios.get(`${baseURL}/list/${userId}`);
 
     return response.data;
   }
@@ -49,7 +44,7 @@ export const getAllOrdersByUserId = createAsyncThunk(
 export const getOrderDetails = createAsyncThunk(
   "/order/getOrderDetails",
   async (id) => {
-    const response = await axios.get(`${baseURL}/api/shop/order/details/${id}`);
+    const response = await axios.get(`${baseURL}/details/${id}`);
 
     return response.data;
   }

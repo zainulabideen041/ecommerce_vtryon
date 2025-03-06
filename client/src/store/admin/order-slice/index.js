@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "ecomtryonbackend.vercel.app";
+const baseURL = "https://ecomtryonbackend.vercel.app/api/admin/orders";
 
 const initialState = {
   orderList: [],
@@ -10,7 +10,7 @@ const initialState = {
 export const getAllOrdersForAdmin = createAsyncThunk(
   "/order/getAllOrdersForAdmin",
   async () => {
-    const response = await axios.get(`${baseURL}/api/admin/orders/get`);
+    const response = await axios.get(`${baseURL}/get`);
 
     return response.data;
   }
@@ -19,9 +19,7 @@ export const getAllOrdersForAdmin = createAsyncThunk(
 export const getOrderDetailsForAdmin = createAsyncThunk(
   "/order/getOrderDetailsForAdmin",
   async (id) => {
-    const response = await axios.get(
-      `${baseURL}/api/admin/orders/details/${id}`
-    );
+    const response = await axios.get(`${baseURL}/details/${id}`);
 
     return response.data;
   }
@@ -30,12 +28,9 @@ export const getOrderDetailsForAdmin = createAsyncThunk(
 export const updateOrderStatus = createAsyncThunk(
   "/order/updateOrderStatus",
   async ({ id, orderStatus }) => {
-    const response = await axios.put(
-      `${baseURL}/api/admin/orders/update/${id}`,
-      {
-        orderStatus,
-      }
-    );
+    const response = await axios.put(`${baseURL}/update/${id}`, {
+      orderStatus,
+    });
 
     return response.data;
   }

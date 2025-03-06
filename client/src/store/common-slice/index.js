@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "ecomtryonbackend.vercel.app";
+const baseURL = "https://ecomtryonbackend.vercel.app/api/common/feature";
 
 const initialState = {
   isLoading: false,
@@ -10,7 +10,7 @@ const initialState = {
 export const getFeatureImages = createAsyncThunk(
   "/order/getFeatureImages",
   async () => {
-    const response = await axios.get(`${baseURL}/api/common/feature/get`);
+    const response = await axios.get(`${baseURL}/get`);
 
     return response.data;
   }
@@ -19,7 +19,7 @@ export const getFeatureImages = createAsyncThunk(
 export const addFeatureImage = createAsyncThunk(
   "/order/addFeatureImage",
   async (image) => {
-    const response = await axios.post(`${baseURL}/api/common/feature/add`, {
+    const response = await axios.post(`${baseURL}/add`, {
       image,
     });
 
