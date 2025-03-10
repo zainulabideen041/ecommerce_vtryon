@@ -15,6 +15,8 @@ const TryOnPage = () => {
   const [imageFile, setImageFile] = useState(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
   const [imageLoadingState, setImageLoadingState] = useState(false);
+  const [processedImageUrl, setProcessedImageUrl] = useState(null);
+  const [isProcessed, setIsProcessed] = useState(false);
   const dispatch = useDispatch();
   const { toast } = useToast();
   const { id } = useParams();
@@ -26,10 +28,9 @@ const TryOnPage = () => {
 
   useEffect(() => {
     dispatch(fetchProductDetails(id));
-  }, [id]);
+  }, [dispatch, id]);
 
-  function handleTryOn() {
-    setLoading(true);
+  async function handleTryOn() {
     if (uploadedImageUrl === "") {
       toast({
         title: "Please upload your image",
@@ -38,8 +39,53 @@ const TryOnPage = () => {
       setLoading(false);
       return;
     }
-    console.log("garment image:", productDetails?.image);
-    console.log("user image:", uploadedImageUrl);
+
+    setLoading(true);
+
+    // Debugging: Log the images before sending
+    console.log("Garment image:", productDetails?.image);
+    console.log("Human image:", uploadedImageUrl);
+    console.log(processedImageUrl);
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/process", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          human_image_url: uploadedImageUrl,
+          cloth_image_url: productDetails?.image,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        toast({
+          title: "Error processing image",
+          description: data.error,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Try-On Completed!",
+          description: "Your processed image is ready.",
+        });
+        console.log(data.output_image_url);
+        setProcessedImageUrl(data.output_image_url);
+        setIsProcessed(true);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast({
+        title: "Server error",
+        description: "Failed to process image. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleImageChange() {
@@ -125,12 +171,27 @@ const TryOnPage = () => {
               <X
                 className="h-6 w-6 cursor-pointer"
                 title="cancel"
-                onClick={() => setLoading(false)}
+                onClick={() => {
+                  setLoading(false);
+                  setProcessedImageUrl(null);
+                  setIsProcessed(false);
+                }}
               />
             </div>
             <div className="flex items-center justify-center h-[70%]">
               <l-grid size="60" speed="1.2" color="black"></l-grid>
             </div>
+          </div>
+        ) : isProcessed && processedImageUrl ? (
+          <div className="flex flex-col items-center justify-center border max-w-[350px] w-full min-h-[450px] p-3">
+            <h1 className="text-center font-extrabold text-[1.5rem] m-2">
+              RESULT IMAGE
+            </h1>
+            <img
+              src={processedImageUrl}
+              alt={"processedImage"}
+              className="w-full h-[400px] object-cover rounded-lg"
+            />
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center border max-w-[350px] w-full min-h-[450px] p-3">
