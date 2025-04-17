@@ -48,16 +48,19 @@ const TryOnPage = () => {
     console.log(processedImageUrl);
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/process", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          human_image_url: uploadedImageUrl,
-          cloth_image_url: productDetails?.image,
-        }),
-      });
+      const response = await fetch(
+        "https://vtryon-server.onrender.com/process",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            human_image_url: uploadedImageUrl,
+            cloth_image_url: productDetails?.image,
+          }),
+        }
+      );
 
       const data = await response.json();
 
