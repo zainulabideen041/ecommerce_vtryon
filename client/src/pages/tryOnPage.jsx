@@ -45,11 +45,10 @@ const TryOnPage = () => {
     // Debugging: Log the images before sending
     console.log("Garment image:", productDetails?.image);
     console.log("Human image:", uploadedImageUrl);
-    console.log(processedImageUrl);
 
     try {
       const response = await fetch(
-        "https://vtryon-server.onrender.com/process",
+        "http://127.0.0.1:50001/process",
         {
           method: "POST",
           headers: {
