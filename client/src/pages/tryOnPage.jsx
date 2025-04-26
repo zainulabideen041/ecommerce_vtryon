@@ -31,58 +31,49 @@ const TryOnPage = () => {
   }, [dispatch, id]);
 
   async function handleTryOn() {
-    if (uploadedImageUrl === "") {
+    if (!uploadedImageUrl || !productDetails?.image) {
       toast({
-        title: "Please upload your image",
+        title: "Please upload both your image and select a clothing item.",
         variant: "destructive",
       });
-      setLoading(false);
       return;
     }
 
     setLoading(true);
 
-    // Debugging: Log the images before sending
-    console.log("Garment image:", productDetails?.image);
-    console.log("Human image:", uploadedImageUrl);
-
     try {
       const response = await fetch(
-        "http://127.0.0.1:5001/process",
+        "https://try-on-diffusion.p.rapidapi.com/try-on-url",
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "x-rapidapi-key":
+              "a45c88d3c3msh1de50fb4f30855ep103abdjsnfc850e3332d8",
+            "x-rapidapi-host": "try-on-diffusion.p.rapidapi.com",
+            "Content-Type": "application/x-www-form-urlencoded",
           },
-          body: JSON.stringify({
-            human_image_url: uploadedImageUrl,
-            cloth_image_url: productDetails?.image,
+          body: new URLSearchParams({
+            clothing_image_url: productDetails.image,
+            avatar_image_url: uploadedImageUrl,
           }),
         }
       );
 
-      const data = await response.json();
+      const blob = await response.blob();
+      const imageUrl = URL.createObjectURL(blob);
 
-      if (data.error) {
-        toast({
-          title: "Error processing image",
-          description: data.error,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Try-On Completed!",
-          description: "Your processed image is ready.",
-        });
-        console.log(data.output_image_url);
-        setProcessedImageUrl(data.output_image_url);
-        setIsProcessed(true);
-      }
-    } catch (error) {
-      console.error("Error:", error);
+      setProcessedImageUrl(imageUrl);
+      setIsProcessed(true);
+
       toast({
-        title: "Server error",
-        description: "Failed to process image. Please try again later.",
+        title: "Try-On Completed!",
+        description: "Your new outfit is ready!",
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Server Error",
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
