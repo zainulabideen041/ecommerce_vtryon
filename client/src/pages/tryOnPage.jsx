@@ -8,11 +8,15 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { grid } from "ldrs";
+import { getClothImage } from "@/store/tryon-cloth-slice";
+import { getModelImage } from "@/store/tryon-model-slice";
 
 const TryOnPage = () => {
   const [visible, setVisible] = useState(true);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
+  const [exampleClothImgUrl, setExampleClothImgUrl] = useState(null);
+  const [exampleModelImgUrl, setExampleModelImgUrl] = useState(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const [processedImageUrl, setProcessedImageUrl] = useState(null);
@@ -26,14 +30,27 @@ const TryOnPage = () => {
 
   const { productDetails } = useSelector((state) => state.shopProducts);
 
+  const { clothImageList } = useSelector((state) => state.tryonCloth);
+  const { modelImageList } = useSelector((state) => state.tryonModel);
+
   useEffect(() => {
     dispatch(fetchProductDetails(id));
+    dispatch(getClothImage());
+    dispatch(getModelImage());
   }, [dispatch, id]);
 
   async function handleTryOn() {
-    if (!uploadedImageUrl || !productDetails?.image) {
+    if (!exampleModelImgUrl && !uploadedImageUrl) {
       toast({
-        title: "Please upload both your image and select a clothing item.",
+        title: "Please upload your image or select an example model image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!exampleClothImgUrl && !productDetails.image) {
+      toast({
+        title: "Please select a clothing item or use an example cloth image.",
         variant: "destructive",
       });
       return;
@@ -42,6 +59,23 @@ const TryOnPage = () => {
     setLoading(true);
 
     try {
+      // Load the uploaded image and check its dimensions
+      const uploadedImg = new Image();
+      uploadedImg.src = exampleModelImgUrl || uploadedImageUrl;
+
+      await new Promise((resolve, reject) => {
+        uploadedImg.onload = () => {
+          if (uploadedImg.width < 700 || uploadedImg.height < 1000) {
+            reject(new Error("Uploaded image too small"));
+          } else {
+            resolve();
+          }
+        };
+        uploadedImg.onerror = () =>
+          reject(new Error("Failed to load uploaded image"));
+      });
+
+      // Proceed to send to API
       const response = await fetch(
         "https://try-on-diffusion.p.rapidapi.com/try-on-url",
         {
@@ -53,8 +87,8 @@ const TryOnPage = () => {
             "Content-Type": "application/x-www-form-urlencoded",
           },
           body: new URLSearchParams({
-            clothing_image_url: productDetails.image,
-            avatar_image_url: uploadedImageUrl,
+            clothing_image_url: exampleClothImgUrl || productDetails.image,
+            avatar_image_url: exampleModelImgUrl || uploadedImageUrl,
           }),
         }
       );
@@ -71,9 +105,17 @@ const TryOnPage = () => {
       });
     } catch (error) {
       console.error(error);
+      let description = "Something went wrong. Please try again.";
+      if (error.message === "Uploaded image too small") {
+        description =
+          "Your image is too small. It must be at least 700x1000 pixels.";
+      } else if (error.message === "Failed to load uploaded image") {
+        description = "Failed to load your uploaded image.";
+      }
+
       toast({
-        title: "Server Error",
-        description: "Something went wrong. Please try again.",
+        title: "Try-On Failed",
+        description,
         variant: "destructive",
       });
     } finally {
@@ -83,6 +125,9 @@ const TryOnPage = () => {
 
   function handleImageChange() {
     setUploadedImageUrl("");
+    setProcessedImageUrl(null);
+    setExampleModelImgUrl(null);
+    setIsProcessed(false);
     setImageFile(null);
   }
 
@@ -109,54 +154,97 @@ const TryOnPage = () => {
           </button>
         </Alert>
       )}
-      <div className="flex flex-wrap justify-center w-full min-h-screen gap-4 p-4">
+      <div className="flex flex-row flex-wrap justify-center w-full min-h-[90vh] gap-5 p-4">
         {/* Garment Image Section */}
-        <div className="flex flex-col items-center justify-center border max-w-[350px] w-full min-h-[450px] p-2">
-          <h1 className="text-center font-extrabold text-[1.5rem] m-2">
-            GARMENT IMAGE
-          </h1>
-          <img
-            src={productDetails?.image}
-            alt={productDetails?.title}
-            className="w-full h-[400px] object-cover rounded-lg"
-          />
-          <Button className="mt-3 w-full" onClick={handleChangeCloth}>
-            Change Image
-          </Button>
+        <div className="flex flex-row h-[60vh]">
+          <div className="flex flex-row flex-wrap gap-3 border w-[250px] justify-center overflow-x-scroll hide-scrollbar">
+            <h2 className="sticky top-0 bg-white z-10 text-center font-bold text-[1.5rem] m-2">
+              Example Cloths
+            </h2>
+            {clothImageList && clothImageList.length > 0 ? (
+              clothImageList.map((clothImgItem, index) => (
+                <div className="relative" key={index}>
+                  <img
+                    src={clothImgItem.image}
+                    className="h-[80px] object-cover rounded-t-lg cursor-pointer"
+                    onClick={() => setExampleClothImgUrl(clothImgItem.image)}
+                  />
+                </div>
+              ))
+            ) : (
+              <h2>No Example Cloth Items</h2>
+            )}
+          </div>
+          <div className="flex flex-col border ">
+            <h1 className="text-center font-extrabold text-[1.5rem] m-2">
+              CLOTH IMAGE
+            </h1>
+            <img
+              src={exampleClothImgUrl || productDetails?.image}
+              alt={productDetails?.title || "Clothing image"}
+              className="w-full h-[300px] object-cover rounded-lg"
+            />
+            <Button className="mt-3 w-full" onClick={handleChangeCloth}>
+              Change Image
+            </Button>
+          </div>
         </div>
 
         {/* User Uploaded Image Section */}
-        <div className="flex flex-col items-center justify-center border max-w-[350px] w-full min-h-[450px] p-3">
-          {uploadedImageUrl === "" ? (
-            <ProductImageUpload
-              title={"YOUR IMAGE"}
-              imageFile={imageFile}
-              setImageFile={setImageFile}
-              uploadedImageUrl={uploadedImageUrl}
-              setUploadedImageUrl={setUploadedImageUrl}
-              setImageLoadingState={setImageLoadingState}
-              imageLoadingState={imageLoadingState}
-            />
-          ) : (
-            <>
-              <h1 className="text-center font-extrabold text-[1.5rem] m-2">
-                YOUR IMAGE
-              </h1>
-              <img
-                src={uploadedImageUrl}
-                alt="Uploaded"
-                className="w-full h-[400px] object-cover rounded-lg"
+        <div className="flex flex-row h-[60vh]">
+          <div className="flex flex-row flex-wrap gap-3 border w-[250px] justify-center overflow-x-scroll hide-scrollbar">
+            <h2 className="sticky top-0 bg-white z-10 text-center font-bold text-[1.5rem] m-2">
+              Example Models
+            </h2>
+            {modelImageList && modelImageList.length > 0 ? (
+              modelImageList.map((modelImgItem, index) => (
+                <div className="relative" key={index}>
+                  <img
+                    src={modelImgItem.image}
+                    className="h-[80px] object-cover rounded-t-lg cursor-pointer"
+                    onClick={() => setExampleModelImgUrl(modelImgItem.image)}
+                  />
+                </div>
+              ))
+            ) : (
+              <h2>No Example Cloth Items</h2>
+            )}
+          </div>
+          <div className="flex flex-col items-center justify-center border">
+            {!exampleModelImgUrl ? (
+              <ProductImageUpload
+                title={"YOUR IMAGE"}
+                imageFile={imageFile}
+                setImageFile={setImageFile}
+                uploadedImageUrl={uploadedImageUrl}
+                setUploadedImageUrl={setUploadedImageUrl}
+                setImageLoadingState={setImageLoadingState}
+                imageLoadingState={imageLoadingState}
               />
-              <Button className="mt-3 w-full" onClick={handleImageChange}>
-                Change Image
-              </Button>
-            </>
-          )}
+            ) : (
+              <>
+                <h1 className="text-center font-extrabold text-[1.5rem] m-2">
+                  YOUR IMAGE
+                </h1>
+                <img
+                  src={exampleModelImgUrl || uploadedImageUrl}
+                  alt="Uploaded"
+                  className="w-full h-[300px] object-cover rounded-lg"
+                />
+                <Button
+                  className="mt-3 w-full"
+                  onClick={() => handleImageChange}
+                >
+                  Change Image
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Try-On Result Section */}
         {loading ? (
-          <div className="relative flex flex-col items-center justify-center border max-w-[350px] w-full min-h-[450px] p-3">
+          <div className="relative flex flex-col items-center justify-center border h-[60vh]">
             <h1 className="text-center font-extrabold text-[1.5rem] m-2">
               RESULT IMAGE
             </h1>
@@ -176,18 +264,18 @@ const TryOnPage = () => {
             </div>
           </div>
         ) : isProcessed && processedImageUrl ? (
-          <div className="flex flex-col items-center justify-center border max-w-[350px] w-full min-h-[450px] p-3">
+          <div className="flex flex-col ml-9 items-center justify-center border h-[60vh]">
             <h1 className="text-center font-extrabold text-[1.5rem] m-2">
               RESULT IMAGE
             </h1>
             <img
               src={processedImageUrl}
               alt={"processedImage"}
-              className="w-full h-[400px] object-cover rounded-lg"
+              className="w-full h-[350px] object-cover rounded-lg"
             />
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center border max-w-[350px] w-full min-h-[450px] p-3">
+          <div className="flex flex-col items-center justify-center border min-w-[300px] h-[60vh]">
             <Button className="w-full" onClick={handleTryOn}>
               TRY ON NOW!
             </Button>

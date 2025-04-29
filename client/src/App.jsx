@@ -4,9 +4,11 @@ import AuthLogin from "./pages/auth/login";
 import AuthRegister from "./pages/auth/register";
 import AdminLayout from "./components/admin-view/layout";
 import AdminDashboard from "./pages/admin-view/dashboard";
+import TryonCloths from "./pages/admin-view/tryon-cloths";
+import TryonModel from "./pages/admin-view/tryon-models";
 import AdminProducts from "./pages/admin-view/products";
 import AdminOrders from "./pages/admin-view/orders";
-import AdminFeatures from "./pages/admin-view/features";
+// import AdminFeatures from "./pages/admin-view/features";
 import ShoppingLayout from "./components/shopping-view/layout";
 import NotFound from "./pages/not-found";
 import ShoppingHome from "./pages/shopping-view/home";
@@ -69,9 +71,11 @@ function App() {
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="tryon-cloths" element={<TryonCloths />} />
+          <Route path="tryon-models" element={<TryonModel />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="orders" element={<AdminOrders />} />
-          <Route path="features" element={<AdminFeatures />} />
+          {/* <Route path="features" element={<AdminFeatures />} /> */}
         </Route>
 
         <Route

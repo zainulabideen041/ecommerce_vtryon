@@ -14,6 +14,7 @@ const shopSearchRouter = require("./routes/shop/search-routes");
 const shopReviewRouter = require("./routes/shop/review-routes");
 
 const commonFeatureRouter = require("./routes/common/feature-routes");
+const tryonRouter = require("./routes/common/tryon-routes");
 
 const dotenv = require("dotenv");
 dotenv.config();
@@ -58,6 +59,8 @@ app.use("/api/shop/search", shopSearchRouter);
 app.use("/api/shop/review", shopReviewRouter);
 
 app.use("/api/common/feature", commonFeatureRouter);
+
+app.use("/api/common/tryon", tryonRouter);
 
 app.get("/", (req, res) => {
   res.json("hello");

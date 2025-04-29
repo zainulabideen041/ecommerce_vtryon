@@ -3,6 +3,8 @@ import {
   ChartNoAxesCombined,
   LayoutDashboard,
   ShoppingBasket,
+  PersonStanding,
+  Shirt,
 } from "lucide-react";
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +28,18 @@ const adminSidebarMenuItems = [
     label: "Orders",
     path: "/admin/orders",
     icon: <BadgeCheck />,
+  },
+  {
+    id: "tryoncloth",
+    label: "Tryon Cloths",
+    path: "/admin/tryon-cloths",
+    icon: <Shirt />,
+  },
+  {
+    id: "tryonmodel",
+    label: "Tryon Models",
+    path: "/admin/tryon-models",
+    icon: <PersonStanding />,
   },
 ];
 
