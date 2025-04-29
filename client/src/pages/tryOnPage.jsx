@@ -182,7 +182,7 @@ const TryOnPage = () => {
             <img
               src={exampleClothImgUrl || productDetails?.image}
               alt={productDetails?.title || "Clothing image"}
-              className="w-full h-[300px] object-cover rounded-lg"
+              className="w-full h-[400px] object-cover rounded-lg"
             />
             <Button className="mt-3 w-full" onClick={handleChangeCloth}>
               Change Image
@@ -210,7 +210,7 @@ const TryOnPage = () => {
               <h2>No Example Cloth Items</h2>
             )}
           </div>
-          <div className="flex flex-col items-center justify-center border">
+          <div className="flex flex-col border">
             {!exampleModelImgUrl ? (
               <ProductImageUpload
                 title={"YOUR IMAGE"}
@@ -229,7 +229,7 @@ const TryOnPage = () => {
                 <img
                   src={exampleModelImgUrl || uploadedImageUrl}
                   alt="Uploaded"
-                  className="w-full h-[300px] object-cover rounded-lg"
+                  className="w-full h-[400px] object-cover rounded-lg"
                 />
                 <Button
                   className="mt-3 w-full"
@@ -264,14 +264,14 @@ const TryOnPage = () => {
             </div>
           </div>
         ) : isProcessed && processedImageUrl ? (
-          <div className="flex flex-col ml-9 items-center justify-center border h-[60vh]">
+          <div className="flex flex-col ml-9 border h-[60vh]">
             <h1 className="text-center font-extrabold text-[1.5rem] m-2">
               RESULT IMAGE
             </h1>
             <img
               src={processedImageUrl}
               alt={"processedImage"}
-              className="w-full h-[350px] object-cover rounded-lg"
+              className="w-full h-[450px] object-cover rounded-lg"
             />
           </div>
         ) : (
