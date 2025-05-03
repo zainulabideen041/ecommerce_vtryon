@@ -17,7 +17,7 @@ const TryOnPage = () => {
   const [imageFile, setImageFile] = useState(null);
   const [exampleClothImgUrl, setExampleClothImgUrl] = useState(null);
   const [exampleModelImgUrl, setExampleModelImgUrl] = useState(null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState("");
+  const [uploadedImageUrl, setUploadedImageUrl] = useState(null);
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const [processedImageUrl, setProcessedImageUrl] = useState(null);
   const [isProcessed, setIsProcessed] = useState(false);
@@ -38,6 +38,8 @@ const TryOnPage = () => {
     dispatch(getClothImage());
     dispatch(getModelImage());
   }, [dispatch, id]);
+
+  console.log(uploadedImageUrl);
 
   async function handleTryOn() {
     if (!exampleModelImgUrl && !uploadedImageUrl) {
@@ -211,7 +213,7 @@ const TryOnPage = () => {
             )}
           </div>
           <div className="flex flex-col border">
-            {!exampleModelImgUrl ? (
+            {!exampleModelImgUrl && !uploadedImageUrl ? (
               <ProductImageUpload
                 title={"YOUR IMAGE"}
                 imageFile={imageFile}
@@ -231,10 +233,7 @@ const TryOnPage = () => {
                   alt="Uploaded"
                   className="w-full h-[400px] object-cover rounded-lg"
                 />
-                <Button
-                  className="mt-3 w-full"
-                  onClick={() => handleImageChange}
-                >
+                <Button className="mt-3 w-full" onClick={handleImageChange}>
                   Change Image
                 </Button>
               </>
