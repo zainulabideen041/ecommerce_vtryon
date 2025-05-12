@@ -184,9 +184,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                 reviews.map((reviewItem) => (
                   <div className="flex gap-4">
                     <Avatar className="w-10 h-10 border">
-                      <AvatarFallback>
-                        {reviewItem?.userName[0].toUpperCase()}
-                      </AvatarFallback>
+                      <AvatarFallback>{reviewItem?.userName}</AvatarFallback>
                     </Avatar>
                     <div className="grid gap-1">
                       <div className="flex items-center gap-2">

@@ -144,8 +144,8 @@ const TryOnPage = () => {
           <Terminal className="h-4 w-4" />
           <AlertTitle>Caution!</AlertTitle>
           <AlertDescription>
-            It may take 10 - 15 seconds to be processed.
-            Your Processed Image is not getting stored in our database.
+            It may take 10 - 15 seconds to be processed. Your Processed Image is
+            not getting stored in our database.
           </AlertDescription>
           <button
             className="absolute top-5 right-2 p-1 text-gray-500 hover:text-gray-700"
