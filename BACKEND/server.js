@@ -30,7 +30,7 @@ const PORT = process.env.PORT;
 app.use(
   cors({
     origin: [
-      "https://ecommerce-vtryon-frontend.vercel.app",
+      "https://luxar-vtryon.vercel.app",
       "http://localhost:5173",
     ],
     methods: ["GET", "POST", "DELETE", "PUT"],
