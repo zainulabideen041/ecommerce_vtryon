@@ -16,6 +16,9 @@ import {
   UmbrellaIcon,
   WashingMachine,
   WatchIcon,
+  Sparkles,
+  TrendingUp,
+  ArrowRight,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
@@ -47,6 +50,7 @@ const brandsWithIcon = [
   { id: "zara", label: "Zara", icon: Images },
   { id: "h&m", label: "H&M", icon: Heater },
 ];
+
 function ShoppingHome() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { productList, productDetails } = useSelector(
@@ -77,6 +81,17 @@ function ShoppingHome() {
   }
 
   function handleAddtoCart(getCurrentProductId) {
+    // Check if user is authenticated
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please login to add items to your cart",
+        variant: "destructive",
+      });
+      navigate("/auth/login");
+      return;
+    }
+
     dispatch(
       addToCart({
         userId: user?.id,
@@ -87,7 +102,8 @@ function ShoppingHome() {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
         toast({
-          title: "Product is added to cart",
+          title: "Added to cart",
+          description: "Product has been added to your cart",
         });
       }
     });
@@ -102,7 +118,7 @@ function ShoppingHome() {
       setCurrentSlide(
         (prevSlide) => (prevSlide + 1) % featureImageList?.length
       );
-    }, 15000);
+    }, 5000);
 
     return () => clearInterval(timer);
   }, [featureImageList]);
@@ -116,26 +132,70 @@ function ShoppingHome() {
     );
   }, [dispatch]);
 
-  console.log(productList, "productList");
-
   useEffect(() => {
     dispatch(getFeatureImages());
   }, [dispatch]);
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="relative w-full h-[600px] overflow-hidden">
+      {/* Hero Section with Carousel */}
+      <div className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden">
         {featureImageList && featureImageList.length > 0
           ? featureImageList.map((slide, index) => (
-              <img
-                src={slide?.image}
+              <div
                 key={index}
                 className={`${
                   index === currentSlide ? "opacity-100" : "opacity-0"
-                } absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000`}
-              />
+                } absolute inset-0 transition-opacity duration-1000`}
+              >
+                <img
+                  src={slide?.image}
+                  alt={`Banner ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                {/* Overlay Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+
+                {/* Hero Content */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="container mx-auto px-4">
+                    <div className="max-w-3xl text-center text-white space-y-6 slide-up">
+                      <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold tracking-tight">
+                        Experience Fashion
+                        <span className="block gradient-text bg-gradient-to-r from-purple-400 to-blue-400">
+                          Virtually
+                        </span>
+                      </h1>
+                      <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto">
+                        Try on clothes with AI before you buy. Shop smarter,
+                        look better.
+                      </p>
+                      <div className="flex flex-wrap gap-4 justify-center pt-4">
+                        <Button
+                          size="lg"
+                          onClick={() => navigate("/shop/listing")}
+                          className="group"
+                        >
+                          Shop Now
+                          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </Button>
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20"
+                        >
+                          <Sparkles className="w-5 h-5" />
+                          Try Virtual Try-On
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))
           : null}
+
+        {/* Navigation Buttons */}
         <Button
           variant="outline"
           size="icon"
@@ -146,9 +206,9 @@ function ShoppingHome() {
                 featureImageList.length
             )
           }
-          className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/80"
+          className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30 z-10"
         >
-          <ChevronLeftIcon className="w-4 h-4" />
+          <ChevronLeftIcon className="w-5 h-5" />
         </Button>
         <Button
           variant="outline"
@@ -158,28 +218,55 @@ function ShoppingHome() {
               (prevSlide) => (prevSlide + 1) % featureImageList.length
             )
           }
-          className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/80"
+          className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30 z-10"
         >
-          <ChevronRightIcon className="w-4 h-4" />
+          <ChevronRightIcon className="w-5 h-5" />
         </Button>
+
+        {/* Slide Indicators */}
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
+          {featureImageList?.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index === currentSlide
+                  ? "bg-white w-8"
+                  : "bg-white/50 hover:bg-white/75"
+              }`}
+            />
+          ))}
+        </div>
       </div>
-      <section className="py-12 bg-gray-50">
+
+      {/* Shop by Category */}
+      <section className="py-16 md:py-20 bg-gradient-to-b from-background to-muted/20">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-8">
-            Shop by category
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="text-center mb-12 space-y-3">
+            <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight">
+              Shop by Category
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Discover your style across our curated collections
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
             {categoriesWithIcon.map((categoryItem, index) => (
               <Card
                 key={index}
                 onClick={() =>
                   handleNavigateToListingPage(categoryItem, "category")
                 }
-                className="cursor-pointer hover:shadow-lg transition-shadow"
+                className="group cursor-pointer border-2 hover:border-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <CardContent className="flex flex-col items-center justify-center p-6">
-                  <categoryItem.icon className="w-12 h-12 mb-4 text-primary" />
-                  <span className="font-bold">{categoryItem.label}</span>
+                <CardContent className="flex flex-col items-center justify-center p-6 md:p-8 space-y-4">
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <categoryItem.icon className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                  </div>
+                  <span className="font-semibold text-base md:text-lg">
+                    {categoryItem.label}
+                  </span>
                 </CardContent>
               </Card>
             ))}
@@ -187,19 +274,32 @@ function ShoppingHome() {
         </div>
       </section>
 
-      <section className="py-12 bg-gray-50">
+      {/* Shop by Brand */}
+      <section className="py-16 md:py-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-8">Shop by Brand</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="text-center mb-12 space-y-3">
+            <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight">
+              Shop by Brand
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Explore top fashion brands all in one place
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
             {brandsWithIcon.map((brandItem, index) => (
               <Card
                 key={index}
                 onClick={() => handleNavigateToListingPage(brandItem, "brand")}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
+                className="group cursor-pointer border-2 hover:border-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <CardContent className="flex flex-col items-center justify-center p-6">
-                  <brandItem.icon className="w-12 h-12 mb-4 text-primary" />
-                  <span className="font-bold">{brandItem.label}</span>
+                <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
+                  <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-gradient-primary group-hover:scale-110 transition-all duration-300">
+                    <brandItem.icon className="w-7 h-7 text-primary group-hover:text-white transition-colors" />
+                  </div>
+                  <span className="font-semibold text-sm">
+                    {brandItem.label}
+                  </span>
                 </CardContent>
               </Card>
             ))}
@@ -207,25 +307,60 @@ function ShoppingHome() {
         </div>
       </section>
 
-      <section className="py-12">
+      {/* Featured Products */}
+      <section className="py-16 md:py-20 bg-gradient-to-b from-muted/20 to-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-8">
-            Feature Products
-          </h2>
+          <div className="flex items-center justify-between mb-12">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-6 h-6 text-primary" />
+                <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight">
+                  Trending Products
+                </h2>
+              </div>
+              <p className="text-muted-foreground text-lg">
+                Most popular items this week
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/shop/listing")}
+              className="hidden md:flex"
+            >
+              View All
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {productList && productList.length > 0
-              ? productList.map((productItem, index) => (
-                  <ShoppingProductTile
+              ? productList.slice(0, 8).map((productItem, index) => (
+                  <div
                     key={index}
-                    handleGetProductDetails={handleGetProductDetails}
-                    product={productItem}
-                    handleAddtoCart={handleAddtoCart}
-                  />
+                    className="fade-in"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <ShoppingProductTile
+                      handleGetProductDetails={handleGetProductDetails}
+                      product={productItem}
+                      handleAddtoCart={handleAddtoCart}
+                    />
+                  </div>
                 ))
               : null}
           </div>
+          <div className="mt-8 text-center md:hidden">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/shop/listing")}
+              className="w-full sm:w-auto"
+            >
+              View All Products
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </section>
+
       <ProductDetailsDialog
         open={openDetailsDialog}
         setOpen={setOpenDetailsDialog}

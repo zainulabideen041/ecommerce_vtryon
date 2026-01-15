@@ -16,10 +16,17 @@ import {
   fetchAllFilteredProducts,
   fetchProductDetails,
 } from "@/store/shop/products-slice";
-import { ArrowUpDownIcon } from "lucide-react";
+import { ArrowUpDownIcon, SlidersHorizontal, X, Package } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 function createSearchParamsHelper(filterParams) {
   const queryParams = [];
@@ -27,12 +34,9 @@ function createSearchParamsHelper(filterParams) {
   for (const [key, value] of Object.entries(filterParams)) {
     if (Array.isArray(value) && value.length > 0) {
       const paramValue = value.join(",");
-
       queryParams.push(`${key}=${encodeURIComponent(paramValue)}`);
     }
   }
-
-  console.log(queryParams, "queryParams");
 
   return queryParams.join("&");
 }
@@ -48,6 +52,7 @@ function ShoppingListing() {
   const [sort, setSort] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  const [openFilterSheet, setOpenFilterSheet] = useState(false);
   const { toast } = useToast();
 
   const categorySearchParam = searchParams.get("category");
@@ -83,7 +88,17 @@ function ShoppingListing() {
   }
 
   function handleAddtoCart(getCurrentProductId, getTotalStock) {
-    console.log(cartItems);
+    // Check if user is authenticated
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please login to add items to your cart",
+        variant: "destructive",
+      });
+      navigate("/auth/login");
+      return;
+    }
+
     let getCartItems = cartItems.items || [];
 
     if (getCartItems.length) {
@@ -94,7 +109,8 @@ function ShoppingListing() {
         const getQuantity = getCartItems[indexOfCurrentItem].quantity;
         if (getQuantity + 1 > getTotalStock) {
           toast({
-            title: `Only ${getQuantity} quantity can be added for this item`,
+            title: "Stock limit reached",
+            description: `Only ${getQuantity} quantity can be added for this item`,
             variant: "destructive",
           });
 
@@ -113,10 +129,16 @@ function ShoppingListing() {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
         toast({
-          title: "Product is added to cart",
+          title: "Added to cart",
+          description: "Product has been added to your cart",
         });
       }
     });
+  }
+
+  function clearFilters() {
+    setFilters({});
+    sessionStorage.removeItem("filters");
   }
 
   useEffect(() => {
@@ -142,56 +164,136 @@ function ShoppingListing() {
     if (productDetails !== null) setOpenDetailsDialog(true);
   }, [productDetails]);
 
-  console.log(productList, "productListproductListproductList");
+  const activeFiltersCount = Object.values(filters).reduce(
+    (acc, curr) => acc + curr.length,
+    0
+  );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 p-4 md:p-6">
-      <ProductFilter filters={filters} handleFilter={handleFilter} />
-      <div className="bg-background w-full rounded-lg shadow-sm">
-        <div className="p-4 border-b flex items-center justify-between">
-          <h2 className="text-lg font-extrabold">All Products</h2>
-          <div className="flex items-center gap-3">
-            <span className="text-muted-foreground">
-              {productList?.length} Products
-            </span>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+        {/* Desktop Filter Sidebar */}
+        <aside className="hidden lg:block">
+          <ProductFilter filters={filters} handleFilter={handleFilter} />
+        </aside>
+
+        {/* Main Content */}
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b">
+            <div>
+              <h1 className="text-3xl font-display font-bold tracking-tight">
+                All Products
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                {productList?.length || 0} products found
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Mobile Filter Button */}
+              <Sheet open={openFilterSheet} onOpenChange={setOpenFilterSheet}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="lg:hidden relative">
+                    <SlidersHorizontal className="w-4 h-4 mr-2" />
+                    Filters
+                    {activeFiltersCount > 0 && (
+                      <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full">
+                        {activeFiltersCount}
+                      </span>
+                    )}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-full max-w-sm">
+                  <SheetHeader>
+                    <SheetTitle>Filters</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6">
+                    <ProductFilter
+                      filters={filters}
+                      handleFilter={handleFilter}
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
+
+              {/* Clear Filters */}
+              {activeFiltersCount > 0 && (
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex items-center gap-1"
+                  onClick={clearFilters}
+                  className="hidden sm:flex"
                 >
-                  <ArrowUpDownIcon className="h-4 w-4" />
-                  <span>Sort by</span>
+                  <X className="w-4 h-4 mr-2" />
+                  Clear ({activeFiltersCount})
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px]">
-                <DropdownMenuRadioGroup value={sort} onValueChange={handleSort}>
-                  {sortOptions.map((sortItem) => (
-                    <DropdownMenuRadioItem
-                      value={sortItem.id}
-                      key={sortItem.id}
-                    >
-                      {sortItem.label}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              )}
+
+              {/* Sort Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="min-w-[140px]">
+                    <ArrowUpDownIcon className="h-4 w-4 mr-2" />
+                    Sort by
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  <DropdownMenuRadioGroup
+                    value={sort}
+                    onValueChange={handleSort}
+                  >
+                    {sortOptions.map((sortItem) => (
+                      <DropdownMenuRadioItem
+                        value={sortItem.id}
+                        key={sortItem.id}
+                      >
+                        {sortItem.label}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-          {productList && productList.length > 0
-            ? productList.map((productItem) => (
-                <ShoppingProductTile
-                  handleGetProductDetails={handleGetProductDetails}
-                  product={productItem}
-                  handleAddtoCart={handleAddtoCart}
-                />
-              ))
-            : null}
+
+          {/* Products Grid */}
+          {productList && productList.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {productList.map((productItem, index) => (
+                <div
+                  key={productItem._id}
+                  className="fade-in"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <ShoppingProductTile
+                    handleGetProductDetails={handleGetProductDetails}
+                    product={productItem}
+                    handleAddtoCart={handleAddtoCart}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
+                <Package className="w-10 h-10 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No products found</h3>
+              <p className="text-muted-foreground mb-6 max-w-md">
+                We couldn't find any products matching your filters. Try
+                adjusting your search criteria.
+              </p>
+              {activeFiltersCount > 0 && (
+                <Button onClick={clearFilters} variant="outline">
+                  Clear all filters
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
+
       <ProductDetailsDialog
         open={openDetailsDialog}
         setOpen={setOpenDetailsDialog}
