@@ -1,0 +1,29 @@
+# Luxar - AI Virtual Try-On E-Commerce
+# https://luxar-vtryon.vercel.app
+
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow admin and private pages
+Disallow: /admin/
+Disallow: /shop/account
+Disallow: /shop/checkout
+Disallow: /shop/paypal-return
+Disallow: /shop/payment-success
+
+# Disallow API endpoints
+Disallow: /api/
+
+# Allow specific important pages
+Allow: /shop/home
+Allow: /shop/listing
+Allow: /shop/search
+Allow: /auth/login
+Allow: /auth/register
+
+# Crawl-delay (optional, helps prevent server overload)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://luxar-vtryon.vercel.app/sitemap.xml
