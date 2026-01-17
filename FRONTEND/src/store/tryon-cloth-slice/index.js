@@ -27,6 +27,15 @@ export const addClothImage = createAsyncThunk(
   }
 );
 
+export const deleteClothImage = createAsyncThunk(
+  "/order/deleteClothImage",
+  async (id) => {
+    const response = await axios.delete(`${baseURL}/deletecloth/${id}`);
+
+    return response.data;
+  }
+);
+
 const tryonClothSlice = createSlice({
   name: "tryonClothSlice",
   initialState,

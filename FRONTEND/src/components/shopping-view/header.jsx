@@ -62,7 +62,7 @@ function MenuItems() {
       {shoppingViewHeaderMenuItems.map((menuItem) => (
         <Label
           onClick={() => handleNavigate(menuItem)}
-          className="text-sm font-medium cursor-pointer hover:text-primary transition-colors"
+          className="text-base font-medium cursor-pointer hover:text-primary transition-colors"
           key={menuItem.id}
         >
           {menuItem.label}
@@ -93,10 +93,19 @@ function HeaderRightContent() {
   if (!isAuthenticated || !user) {
     return (
       <div className="flex items-center gap-3">
-        <Button variant="outline" onClick={() => navigate("/auth/login")}>
+        <Button
+          variant="outline"
+          onClick={() => navigate("/auth/login")}
+          className="h-11 px-6 text-base"
+        >
           Login
         </Button>
-        <Button onClick={() => navigate("/auth/register")}>Sign Up</Button>
+        <Button
+          onClick={() => navigate("/auth/register")}
+          className="h-11 px-6 text-base"
+        >
+          Sign Up
+        </Button>
       </div>
     );
   }
@@ -109,7 +118,7 @@ function HeaderRightContent() {
           onClick={() => setOpenCartSheet(true)}
           variant="outline"
           size="icon"
-          className="relative hover:border-primary transition-all"
+          className="relative hover:border-primary transition-all h-11 w-11"
         >
           <ShoppingCart className="w-5 h-5" />
           {cartItems?.items?.length > 0 && (
@@ -131,7 +140,7 @@ function HeaderRightContent() {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Avatar className="bg-gradient-primary cursor-pointer hover:scale-105 transition-transform">
+          <Avatar className="bg-gradient-primary cursor-pointer hover:scale-105 transition-transform h-11 w-11">
             <AvatarFallback className="bg-gradient-primary text-white font-bold text-lg">
               {user?.userName ? user.userName[0].toUpperCase() : "U"}
             </AvatarFallback>
@@ -179,16 +188,28 @@ function ShoppingHeader() {
     <header
       className={`sticky top-0 z-50 w-full border-b transition-all duration-300 ${
         isScrolled
-          ? "bg-background/95 backdrop-blur-lg shadow-md"
-          : "bg-background"
+          ? "bg-background/80 backdrop-blur-xl shadow-lg border-border/50"
+          : "bg-background border-border"
       }`}
     >
-      <div className="flex h-16 items-center justify-between px-4 md:px-6 container mx-auto">
-        <Link to="/shop/home" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center group-hover:scale-105 transition-transform">
-            <ShoppingBag className="h-5 w-5 text-white" />
+      <div className="flex h-20 items-center justify-between px-4 md:px-6 container mx-auto">
+        <Link to="/shop/home" className="flex items-center gap-3 group">
+          <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform">
+            <img
+              src="/logo.png"
+              alt="Luxar Logo"
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                // Fallback to gradient icon if logo doesn't exist
+                e.target.style.display = "none";
+                e.target.nextElementSibling.style.display = "flex";
+              }}
+            />
+            <div className="w-12 h-12 rounded-xl bg-gradient-primary hidden items-center justify-center">
+              <ShoppingBag className="h-6 w-6 text-white" />
+            </div>
           </div>
-          <span className="font-display font-bold text-xl bg-gradient-primary bg-clip-text text-transparent">
+          <span className="font-display font-bold text-2xl bg-gradient-primary bg-clip-text text-transparent">
             Luxar
           </span>
         </Link>
@@ -203,8 +224,19 @@ function ShoppingHeader() {
           <SheetContent side="left" className="w-full max-w-xs">
             <div className="flex flex-col gap-6">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
-                  <ShoppingBag className="h-5 w-5 text-white" />
+                <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center">
+                  <img
+                    src="/logo.png"
+                    alt="Luxar Logo"
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                      e.target.nextElementSibling.style.display = "flex";
+                    }}
+                  />
+                  <div className="w-10 h-10 rounded-xl bg-gradient-primary hidden items-center justify-center">
+                    <ShoppingBag className="h-5 w-5 text-white" />
+                  </div>
                 </div>
                 <span className="font-display font-bold text-xl">Luxar</span>
               </div>

@@ -102,24 +102,51 @@ function AdminProducts() {
 
   return (
     <Fragment>
-      <div className="mb-5 w-full flex justify-end">
-        <Button onClick={() => setOpenCreateProductsDialog(true)}>
-          Add New Product
-        </Button>
+      {/* Page Header */}
+      <div className="mb-8 space-y-4 fade-in">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-display font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Products
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Manage your product inventory and listings
+            </p>
+          </div>
+          <Button
+            onClick={() => setOpenCreateProductsDialog(true)}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all h-12 px-6 text-base"
+          >
+            <span className="mr-2">+</span>
+            Add New Product
+          </Button>
+        </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
-        {productList && productList.length > 0
-          ? productList.map((productItem, index) => (
-              <AdminProductTile
-                key={index}
-                setFormData={setFormData}
-                setOpenCreateProductsDialog={setOpenCreateProductsDialog}
-                setCurrentEditedId={setCurrentEditedId}
-                product={productItem}
-                handleDelete={handleDelete}
-              />
-            ))
-          : null}
+
+      {/* Products Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {productList && productList.length > 0 ? (
+          productList.map((productItem, index) => (
+            <AdminProductTile
+              key={index}
+              setFormData={setFormData}
+              setOpenCreateProductsDialog={setOpenCreateProductsDialog}
+              setCurrentEditedId={setCurrentEditedId}
+              product={productItem}
+              handleDelete={handleDelete}
+            />
+          ))
+        ) : (
+          <div className="col-span-full text-center py-16">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+              <span className="text-4xl">📦</span>
+            </div>
+            <p className="text-muted-foreground text-lg">No products found</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Click "Add New Product" to create your first product
+            </p>
+          </div>
+        )}
       </div>
       <Sheet
         open={openCreateProductsDialog}
@@ -129,11 +156,16 @@ function AdminProducts() {
           setFormData(initialFormData);
         }}
       >
-        <SheetContent side="right" className="overflow-auto">
-          <SheetHeader>
-            <SheetTitle>
+        <SheetContent side="right" className="overflow-auto w-full sm:max-w-xl">
+          <SheetHeader className="pb-6 border-b">
+            <SheetTitle className="text-2xl font-display font-bold bg-gradient-primary bg-clip-text text-transparent">
               {currentEditedId !== null ? "Edit Product" : "Add New Product"}
             </SheetTitle>
+            <p className="text-sm text-muted-foreground">
+              {currentEditedId !== null
+                ? "Update product details and save changes"
+                : "Fill in the details to create a new product"}
+            </p>
           </SheetHeader>
           <ProductImageUpload
             title="Upload Image"

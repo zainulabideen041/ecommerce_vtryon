@@ -27,6 +27,15 @@ export const addModelImage = createAsyncThunk(
   }
 );
 
+export const deleteModelImage = createAsyncThunk(
+  "/order/deleteModelImage",
+  async (id) => {
+    const response = await axios.delete(`${baseURL}/deletemodel/${id}`);
+
+    return response.data;
+  }
+);
+
 const tryonModelSlice = createSlice({
   name: "tryonModelSlice",
   initialState,

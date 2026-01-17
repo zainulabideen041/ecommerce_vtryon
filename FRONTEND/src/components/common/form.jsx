@@ -37,7 +37,7 @@ function CommonForm({
                 [getControlItem.name]: event.target.value,
               })
             }
-            className="input-glow"
+            className="input-glow text-lg"
           />
         );
 
@@ -116,7 +116,7 @@ function CommonForm({
       <div className="flex flex-col gap-4">
         {formControls.map((controlItem) => (
           <div className="grid w-full gap-2" key={controlItem.name}>
-            <Label className="text-sm font-medium text-foreground">
+            <Label className="text-md font-medium text-foreground">
               {controlItem.label}
             </Label>
             {renderInputsByComponentType(controlItem)}
@@ -126,7 +126,7 @@ function CommonForm({
       <Button
         disabled={isBtnDisabled}
         type="submit"
-        className="mt-6 w-full"
+        className="mt-6 w-full text-lg"
         loading={isBtnDisabled}
       >
         {buttonText || "Submit"}

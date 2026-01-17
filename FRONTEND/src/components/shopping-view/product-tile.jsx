@@ -14,7 +14,7 @@ function ShoppingProductTile({
 
   return (
     <Card
-      className="group w-full max-w-sm mx-auto overflow-hidden border-2 hover:border-primary transition-all duration-300 hover:shadow-xl cursor-pointer"
+      className="group w-full max-w-sm mx-auto overflow-hidden border-2 hover:border-primary transition-all duration-300 hover:shadow-2xl cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -58,7 +58,7 @@ function ShoppingProductTile({
             <Button
               size="icon"
               variant="outline"
-              className="bg-white/90 backdrop-blur-sm hover:bg-white"
+              className="bg-white/90 backdrop-blur-sm hover:bg-white shadow-md hover:shadow-lg transition-all"
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -78,7 +78,7 @@ function ShoppingProductTile({
                 Only {product?.totalStock} left
               </Badge>
             ) : product?.salePrice > 0 ? (
-              <Badge className="bg-gradient-primary text-white shadow-lg">
+              <Badge className="bg-gradient-primary text-white shadow-lg hover:shadow-xl transition-shadow">
                 Sale
               </Badge>
             ) : null}
@@ -141,7 +141,7 @@ function ShoppingProductTile({
               e.stopPropagation();
               handleAddtoCart(product?._id, product?.totalStock);
             }}
-            className="w-full group/btn"
+            className="w-full group/btn shadow-md hover:shadow-lg transition-all"
           >
             <ShoppingCart className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform" />
             Add to Cart

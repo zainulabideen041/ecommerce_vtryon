@@ -43,16 +43,16 @@ function AuthRegister() {
   }
 
   return (
-    <div className="w-full space-y-8 slide-up">
+    <div className="w-full space-y-6 slide-up">
       {/* Header */}
-      <div className="text-center space-y-3">
+      <div className="text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary mb-4">
           <UserPlus className="w-8 h-8 text-white" />
         </div>
-        <h1 className="text-4xl font-display font-bold tracking-tight text-foreground">
+        <h1 className="text-5xl font-display font-bold tracking-tight text-foreground">
           Create Account
         </h1>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-xl mt-2">
           Join Luxar and start your virtual shopping experience
         </p>
       </div>

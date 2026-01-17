@@ -42,14 +42,14 @@ function AuthLogin() {
   return (
     <div className="w-full space-y-8 slide-up">
       {/* Header */}
-      <div className="text-center space-y-3">
+      <div className="text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary mb-4">
           <LogIn className="w-8 h-8 text-white" />
         </div>
-        <h1 className="text-4xl font-display font-bold tracking-tight text-foreground">
+        <h1 className="text-5xl font-display font-bold tracking-tight text-foreground">
           Welcome Back
         </h1>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-xl mt-3">
           Sign in to continue your shopping journey
         </p>
       </div>
@@ -70,7 +70,7 @@ function AuthLogin() {
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-border"></div>
           </div>
-          <div className="relative flex justify-center text-sm">
+          <div className="relative flex justify-center text-md">
             <span className="px-4 bg-card text-muted-foreground">
               New to Luxar?
             </span>
@@ -91,7 +91,7 @@ function AuthLogin() {
       <div className="text-center space-y-2">
         <Link
           to="/shop/home"
-          className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+          className="text-md text-primary hover:underline inline-flex items-center gap-1"
         >
           Continue as guest
           <ArrowRight className="w-3 h-3" />

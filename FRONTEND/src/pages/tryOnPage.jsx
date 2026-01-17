@@ -165,17 +165,17 @@ const TryOnPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Alert */}
       {visible && (
-        <Alert className="relative mb-8 border-2 border-primary/20 bg-primary/5">
-          <Sparkles className="h-5 w-5 text-primary" />
-          <AlertTitle className="text-lg font-semibold">
+        <Alert className="relative mb-8 border-2 border-primary/30 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 shadow-lg">
+          <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+          <AlertTitle className="text-lg font-semibold bg-gradient-primary bg-clip-text text-transparent">
             AI Virtual Try-On
           </AlertTitle>
-          <AlertDescription className="text-sm">
+          <AlertDescription className="text-sm text-foreground/80">
             Processing takes 10-15 seconds. Your processed image is not stored
             in our database for privacy.
           </AlertDescription>
           <button
-            className="absolute top-4 right-4 p-1 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute top-4 right-4 p-1 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted"
             onClick={() => setVisible(false)}
           >
             <X className="h-5 w-5" />
@@ -184,23 +184,24 @@ const TryOnPage = () => {
       )}
 
       {/* Header */}
-      <div className="text-center mb-12 space-y-3">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary mb-4">
-          <Sparkles className="w-8 h-8 text-white" />
+      <div className="text-center mb-12 space-y-4">
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-primary mb-4 shadow-glow">
+          <Sparkles className="w-10 h-10 text-white animate-pulse" />
         </div>
-        <h1 className="text-4xl font-display font-bold tracking-tight">
+        <h1 className="text-5xl md:text-6xl font-display font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent">
           Virtual Try-On
         </h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+        <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
           See how this outfit looks on you with our AI-powered virtual try-on
+          technology
         </p>
       </div>
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Clothing Section */}
-        <Card className="border-2">
-          <CardHeader className="border-b bg-muted/30">
+        <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-xl">
+          <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-accent/5">
             <CardTitle className="flex items-center gap-2 text-lg">
               <ImageIcon className="w-5 h-5 text-primary" />
               Clothing Item
@@ -212,7 +213,7 @@ const TryOnPage = () => {
               <h3 className="text-sm font-semibold text-muted-foreground">
                 Example Clothes
               </h3>
-              <div className="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto">
+              <div className="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto hide-scrollbar">
                 {clothImageList && clothImageList.length > 0 ? (
                   clothImageList.map((clothImgItem, index) => (
                     <div
@@ -220,7 +221,7 @@ const TryOnPage = () => {
                       onClick={() => setExampleClothImgUrl(clothImgItem.image)}
                       className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${
                         exampleClothImgUrl === clothImgItem.image
-                          ? "border-primary shadow-lg"
+                          ? "border-primary shadow-lg ring-2 ring-primary/20"
                           : "border-transparent hover:border-primary/50"
                       }`}
                     >
@@ -244,7 +245,7 @@ const TryOnPage = () => {
               <h3 className="text-sm font-semibold text-muted-foreground">
                 Selected Clothing
               </h3>
-              <div className="relative rounded-xl overflow-hidden border-2 border-primary/20 bg-muted/30">
+              <div className="relative rounded-xl overflow-hidden border-2 border-primary/30 bg-muted/30 shadow-md">
                 <img
                   src={exampleClothImgUrl || productDetails?.image}
                   alt={productDetails?.title || "Clothing"}
@@ -253,7 +254,7 @@ const TryOnPage = () => {
               </div>
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full hover:border-primary hover:text-primary transition-all"
                 onClick={handleChangeCloth}
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
@@ -264,8 +265,8 @@ const TryOnPage = () => {
         </Card>
 
         {/* Model Section */}
-        <Card className="border-2">
-          <CardHeader className="border-b bg-muted/30">
+        <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-xl">
+          <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-accent/5">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Upload className="w-5 h-5 text-primary" />
               Your Image
@@ -277,7 +278,7 @@ const TryOnPage = () => {
               <h3 className="text-sm font-semibold text-muted-foreground">
                 Example Models
               </h3>
-              <div className="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto">
+              <div className="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto hide-scrollbar">
                 {modelImageList && modelImageList.length > 0 ? (
                   modelImageList.map((modelImgItem, index) => (
                     <div
@@ -285,7 +286,7 @@ const TryOnPage = () => {
                       onClick={() => setExampleModelImgUrl(modelImgItem.image)}
                       className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${
                         exampleModelImgUrl === modelImgItem.image
-                          ? "border-primary shadow-lg"
+                          ? "border-primary shadow-lg ring-2 ring-primary/20"
                           : "border-transparent hover:border-primary/50"
                       }`}
                     >
@@ -321,7 +322,7 @@ const TryOnPage = () => {
                 />
               ) : (
                 <>
-                  <div className="relative rounded-xl overflow-hidden border-2 border-primary/20 bg-muted/30">
+                  <div className="relative rounded-xl overflow-hidden border-2 border-primary/30 bg-muted/30 shadow-md">
                     <img
                       src={exampleModelImgUrl || uploadedImageUrl}
                       alt="Your image"
@@ -330,7 +331,7 @@ const TryOnPage = () => {
                   </div>
                   <Button
                     variant="outline"
-                    className="w-full"
+                    className="w-full hover:border-primary hover:text-primary transition-all"
                     onClick={handleImageChange}
                   >
                     <RefreshCw className="w-4 h-4 mr-2" />
@@ -343,8 +344,8 @@ const TryOnPage = () => {
         </Card>
 
         {/* Result Section */}
-        <Card className="border-2">
-          <CardHeader className="border-b bg-gradient-primary text-white">
+        <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-xl">
+          <CardHeader className="border-b bg-gradient-primary text-white shadow-lg">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Zap className="w-5 h-5" />
               Try-On Result
@@ -411,7 +412,7 @@ const TryOnPage = () => {
                 <Button
                   size="lg"
                   onClick={handleTryOn}
-                  className="group"
+                  className="group shadow-lg hover:shadow-xl transition-all"
                   disabled={
                     (!exampleModelImgUrl && !uploadedImageUrl) ||
                     (!exampleClothImgUrl && !productDetails?.image)

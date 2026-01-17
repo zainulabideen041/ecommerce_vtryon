@@ -21,8 +21,19 @@ function ShoppingFooter() {
           {/* Brand Column */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
-                <ShoppingBag className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center">
+                <img
+                  src="/logo.png"
+                  alt="Luxar Logo"
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.nextElementSibling.style.display = "flex";
+                  }}
+                />
+                <div className="w-10 h-10 rounded-xl bg-gradient-primary hidden items-center justify-center">
+                  <ShoppingBag className="w-5 h-5 text-white" />
+                </div>
               </div>
               <span className="font-display font-bold text-xl bg-gradient-primary bg-clip-text text-transparent">
                 Luxar

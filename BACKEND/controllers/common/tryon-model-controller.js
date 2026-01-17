@@ -1,4 +1,5 @@
 const TryonModel = require("../../models/TryOnExampleModel");
+const { deleteImageFromCloudinary } = require("../../helpers/cloudinary");
 
 const addModelImage = async (req, res) => {
   try {
@@ -40,4 +41,42 @@ const getModelImages = async (req, res) => {
   }
 };
 
-module.exports = { addModelImage, getModelImages };
+const deleteModelImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the model image
+    const modelImage = await TryonModel.findById(id);
+
+    if (!modelImage) {
+      return res.status(404).json({
+        success: false,
+        message: "Model image not found!",
+      });
+    }
+
+    // Delete from Cloudinary
+    try {
+      await deleteImageFromCloudinary(modelImage.image);
+    } catch (cloudinaryError) {
+      console.error("Cloudinary deletion error:", cloudinaryError);
+      // Continue with DB deletion even if Cloudinary fails
+    }
+
+    // Delete from database
+    await TryonModel.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: "Model image deleted successfully!",
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting model image!",
+    });
+  }
+};
+
+module.exports = { addModelImage, getModelImages, deleteModelImage };
