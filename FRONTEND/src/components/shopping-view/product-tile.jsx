@@ -103,10 +103,10 @@ function ShoppingProductTile({
             {product?.title}
           </h3>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="px-2 py-1 bg-secondary rounded-md">
+            <span className="px-2 py-1 bg-black text-white rounded-md">
               {categoryOptionsMap[product?.category]}
             </span>
-            <span className="px-2 py-1 bg-secondary rounded-md">
+            <span className="px-2 py-1 bg-black text-white rounded-md">
               {brandOptionsMap[product?.brand]}
             </span>
           </div>

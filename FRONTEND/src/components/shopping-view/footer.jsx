@@ -49,7 +49,7 @@ function ShoppingFooter() {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg bg-secondary hover:bg-primary hover:text-white transition-colors flex items-center justify-center"
+                className="w-9 h-9 rounded-lg hover:bg-primary hover:text-white transition-colors flex items-center justify-center"
               >
                 <Facebook className="w-4 h-4" />
               </a>
@@ -57,7 +57,7 @@ function ShoppingFooter() {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg bg-secondary hover:bg-primary hover:text-white transition-colors flex items-center justify-center"
+                className="w-9 h-9 rounded-lg hover:bg-primary hover:text-white transition-colors flex items-center justify-center"
               >
                 <Twitter className="w-4 h-4" />
               </a>
@@ -65,7 +65,7 @@ function ShoppingFooter() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg bg-secondary hover:bg-primary hover:text-white transition-colors flex items-center justify-center"
+                className="w-9 h-9 rounded-lg hover:bg-primary hover:text-white transition-colors flex items-center justify-center"
               >
                 <Instagram className="w-4 h-4" />
               </a>
@@ -73,7 +73,7 @@ function ShoppingFooter() {
                 href="https://linkedin.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg bg-secondary hover:bg-primary hover:text-white transition-colors flex items-center justify-center"
+                className="w-9 h-9 rounded-lg hover:bg-primary hover:text-white transition-colors flex items-center justify-center"
               >
                 <Linkedin className="w-4 h-4" />
               </a>

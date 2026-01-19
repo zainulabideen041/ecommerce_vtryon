@@ -411,7 +411,7 @@ function ShoppingHome() {
       <section className="py-5 mt-5 md:py-10 bg-gradient-to-b from-background to-muted/20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 space-y-3">
-            <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tight">
+            <h2 className="text-4xl md:text-6xl font-display font-bold tracking-tight">
               Shop by Category
             </h2>
             <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
@@ -454,7 +454,7 @@ function ShoppingHome() {
       <section className="py-5 mt-5 md:py-10">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 space-y-3">
-            <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tight">
+            <h2 className="text-4xl md:text-6xl font-display font-bold tracking-tight">
               Shop by Brand
             </h2>
             <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
@@ -498,7 +498,7 @@ function ShoppingHome() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-16 h-16 text-primary mr-2" />
-                <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tight">
+                <h2 className="text-4xl md:text-6xl font-display font-bold tracking-tight">
                   Trending Products
                 </h2>
               </div>
