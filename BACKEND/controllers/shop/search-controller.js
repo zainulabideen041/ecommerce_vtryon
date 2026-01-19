@@ -21,7 +21,13 @@ const searchProducts = async (req, res) => {
       ],
     };
 
-    const searchResults = await Product.find(createSearchQuery);
+    // Optimized: use lean() and select only needed fields
+    const searchResults = await Product.find(createSearchQuery)
+      .select(
+        "image title description category brand price salePrice totalStock averageReview",
+      )
+      .lean()
+      .exec();
 
     res.status(200).json({
       success: true,

@@ -2,6 +2,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const compression = require("compression");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 const authRouter = require("./routes/auth/auth-routes");
 const adminProductsRouter = require("./routes/admin/products-routes");
 const adminOrderRouter = require("./routes/admin/order-routes");
@@ -19,12 +22,51 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("MongoDB connected"))
+  .connect(process.env.MONGODB_URI, {
+    // Connection pooling for better performance
+    maxPoolSize: 10,
+    minPoolSize: 2,
+    socketTimeoutMS: 45000,
+    serverSelectionTimeoutMS: 5000,
+    // Optimize for performance
+    autoIndex: false, // Don't build indexes in production
+  })
+  .then(async () => {
+    console.log("MongoDB connected with optimized pool");
+
+    // Create indexes on first run (optional - comment out after first run)
+    if (process.env.CREATE_INDEXES === "true") {
+      const { createIndexes } = require("./helpers/create-indexes");
+      await createIndexes();
+    }
+  })
   .catch((error) => console.log(error));
 
 const app = express();
 const PORT = process.env.PORT;
+
+// Security middleware
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }),
+);
+
+// Compression middleware for faster responses
+app.use(
+  compression({
+    level: 6, // Balanced compression level
+    threshold: 1024, // Only compress responses > 1KB
+  }),
+);
+
+// Rate limiting to prevent abuse
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: "Too many requests, please try again later.",
+});
+app.use("/api/", limiter);
 
 app.use(
   cors({
@@ -38,11 +80,13 @@ app.use(
       "Pragma",
     ],
     credentials: true,
-  })
+  }),
 );
 
 app.use(cookieParser());
-app.use(express.json());
+// Optimized JSON parsing with limits
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use("/api/auth", authRouter);
 app.use("/api/admin/products", adminProductsRouter);
 app.use("/api/admin/orders", adminOrderRouter);

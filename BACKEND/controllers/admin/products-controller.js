@@ -1,5 +1,6 @@
 const { UploadImage } = require("../../helpers/cloudinary");
 const Product = require("../../models/Product");
+const mongoose = require("mongoose");
 
 const handleImageUpload = async (req, res) => {
   try {
@@ -67,7 +68,14 @@ const addProduct = async (req, res) => {
 
 const fetchAllProducts = async (req, res) => {
   try {
-    const listOfProducts = await Product.find({});
+    // Use lean() for faster read-only queries and select only needed fields
+    const listOfProducts = await Product.find({})
+      .select(
+        "image title description category brand price salePrice totalStock averageReview",
+      )
+      .lean()
+      .exec();
+
     res.status(200).json({
       success: true,
       data: listOfProducts,
@@ -133,7 +141,20 @@ const editProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const product = await Product.findByIdAndDelete(id);
+
+    // Delete product and cleanup related data in parallel for better performance
+    const [product, reviewsDeleted, cartsUpdated] = await Promise.all([
+      Product.findByIdAndDelete(id),
+      // Delete all reviews for this product
+      mongoose.model("ProductReview").deleteMany({ productId: id }),
+      // Remove product from all carts
+      mongoose
+        .model("Cart")
+        .updateMany(
+          { "items.productId": id },
+          { $pull: { items: { productId: id } } },
+        ),
+    ]);
 
     if (!product)
       return res.status(404).json({
@@ -143,7 +164,11 @@ const deleteProduct = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Product delete successfully",
+      message: "Product deleted successfully",
+      details: {
+        reviewsDeleted: reviewsDeleted.deletedCount,
+        cartsUpdated: cartsUpdated.modifiedCount,
+      },
     });
   } catch (e) {
     console.log(e);

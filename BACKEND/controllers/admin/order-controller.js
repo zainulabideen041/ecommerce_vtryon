@@ -2,7 +2,20 @@ const Order = require("../../models/Order");
 
 const getAllOrdersOfAllUsers = async (req, res) => {
   try {
-    const orders = await Order.find({});
+    // Add pagination and sorting for better performance
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+
+    const [orders, totalOrders] = await Promise.all([
+      Order.find({})
+        .sort({ orderDate: -1 }) // Most recent first
+        .skip(skip)
+        .limit(limit)
+        .lean()
+        .exec(),
+      Order.countDocuments({}),
+    ]);
 
     if (!orders.length) {
       return res.status(404).json({
@@ -14,6 +27,12 @@ const getAllOrdersOfAllUsers = async (req, res) => {
     res.status(200).json({
       success: true,
       data: orders,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalOrders / limit),
+        totalOrders,
+        ordersPerPage: limit,
+      },
     });
   } catch (e) {
     console.log(e);
@@ -28,7 +47,7 @@ const getOrderDetailsForAdmin = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const order = await Order.findById(id);
+    const order = await Order.findById(id).lean().exec();
 
     if (!order) {
       return res.status(404).json({
@@ -55,7 +74,12 @@ const updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { orderStatus } = req.body;
 
-    const order = await Order.findById(id);
+    // Optimized: single query instead of find then update
+    const order = await Order.findByIdAndUpdate(
+      id,
+      { orderStatus },
+      { new: true, runValidators: true },
+    );
 
     if (!order) {
       return res.status(404).json({
@@ -64,11 +88,10 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    await Order.findByIdAndUpdate(id, { orderStatus });
-
     res.status(200).json({
       success: true,
       message: "Order status is updated successfully!",
+      data: order,
     });
   } catch (e) {
     console.log(e);
@@ -83,7 +106,8 @@ const deleteOrder = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const order = await Order.findById(id);
+    // Optimized: single operation instead of find then delete
+    const order = await Order.findByIdAndDelete(id);
 
     if (!order) {
       return res.status(404).json({
@@ -91,8 +115,6 @@ const deleteOrder = async (req, res) => {
         message: "Order not found!",
       });
     }
-
-    await Order.findByIdAndDelete(id);
 
     res.status(200).json({
       success: true,

@@ -40,14 +40,21 @@ const getFilteredProducts = async (req, res) => {
         break;
     }
 
-    const products = await Product.find(filters).sort(sort);
+    // Optimized: use lean() for faster queries and select only needed fields
+    const products = await Product.find(filters)
+      .select(
+        "image title description category brand price salePrice totalStock averageReview",
+      )
+      .sort(sort)
+      .lean()
+      .exec();
 
     res.status(200).json({
       success: true,
       data: products,
     });
   } catch (e) {
-    console.log(error);
+    console.log(e);
     res.status(500).json({
       success: false,
       message: "Some error occured",
@@ -58,7 +65,7 @@ const getFilteredProducts = async (req, res) => {
 const getProductDetails = async (req, res) => {
   try {
     const { id } = req.params;
-    const product = await Product.findById(id);
+    const product = await Product.findById(id).lean().exec();
 
     if (!product)
       return res.status(404).json({

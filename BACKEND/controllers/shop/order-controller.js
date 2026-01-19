@@ -123,26 +123,29 @@ const capturePayment = async (req, res) => {
     order.paymentId = paymentId || order.paymentId;
     order.payerId = payerId || order.paymentId;
 
-    for (let item of order.cartItems) {
-      let product = await Product.findById(item.productId);
+    // Optimized: Use bulkWrite for batch product updates instead of sequential updates
+    const bulkOps = order.cartItems.map((item) => ({
+      updateOne: {
+        filter: { _id: item.productId },
+        update: { $inc: { totalStock: -item.quantity } },
+      },
+    }));
 
-      if (!product) {
-        return res.status(404).json({
-          success: false,
-          message: `Not enough stock for this product ${product.title}`,
-        });
-      }
-      console.log(product);
+    // Execute all product updates in parallel
+    const [bulkResult] = await Promise.all([
+      Product.bulkWrite(bulkOps),
+      Cart.findByIdAndDelete(order.cartId),
+      order.save(),
+    ]);
 
-      product.totalStock -= item.quantity;
-
-      await product.save();
+    // Check if all products were updated successfully
+    if (bulkResult.modifiedCount !== order.cartItems.length) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Some products could not be updated. Please check stock availability.",
+      });
     }
-
-    const getCartId = order.cartId;
-    await Cart.findByIdAndDelete(getCartId);
-
-    await order.save();
 
     res.status(200).json({
       success: true,
@@ -162,7 +165,10 @@ const getAllOrdersByUser = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const orders = await Order.find({ userId });
+    const orders = await Order.find({ userId })
+      .sort({ orderDate: -1 })
+      .lean()
+      .exec();
 
     if (!orders.length) {
       return res.status(404).json({
@@ -188,7 +194,7 @@ const getOrderDetails = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const order = await Order.findById(id);
+    const order = await Order.findById(id).lean().exec();
 
     if (!order) {
       return res.status(404).json({
