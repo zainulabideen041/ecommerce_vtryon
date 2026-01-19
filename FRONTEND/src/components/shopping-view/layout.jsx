@@ -4,7 +4,7 @@ import ShoppingFooter from "./footer";
 
 function ShoppingLayout() {
   return (
-    <div className="flex flex-col min-h-screen bg-white overflow-x-hidden">
+    <div className="flex flex-col min-h-screen overflow-x-hidden">
       {/* common header */}
       <ShoppingHeader />
       <main className="flex flex-col w-full flex-1">

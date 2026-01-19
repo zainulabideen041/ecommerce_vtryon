@@ -181,10 +181,10 @@ function ShoppingFooter() {
               <li className="flex items-start gap-2">
                 <Mail className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
                 <a
-                  href="mailto:support@luxar.com"
+                  href="mailto:admin@myntrixers.com"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  support@luxar.com
+                  admin@myntrixers.com
                 </a>
               </li>
               <li className="flex items-start gap-2">

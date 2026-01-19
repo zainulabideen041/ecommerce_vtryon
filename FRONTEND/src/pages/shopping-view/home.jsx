@@ -185,7 +185,7 @@ function TypewriterText() {
         setCurrentText(
           isDeleting
             ? currentMessage.substring(0, currentText.length - 1)
-            : currentMessage.substring(0, currentText.length + 1)
+            : currentMessage.substring(0, currentText.length + 1),
         );
       }
     }, typingSpeed);
@@ -204,7 +204,7 @@ function TypewriterText() {
 function ShoppingHome() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { productList, productDetails } = useSelector(
-    (state) => state.shopProducts
+    (state) => state.shopProducts,
   );
 
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
@@ -246,7 +246,7 @@ function ShoppingHome() {
         userId: user?.id,
         productId: getCurrentProductId,
         quantity: 1,
-      })
+      }),
     ).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
@@ -275,7 +275,7 @@ function ShoppingHome() {
       fetchAllFilteredProducts({
         filterParams: {},
         sortParams: "price-lowtohigh",
-      })
+      }),
     );
   }, [dispatch]);
 
@@ -307,7 +307,7 @@ function ShoppingHome() {
                   <div className="space-y-4">
                     <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold tracking-tight drop-shadow-2xl">
                       Experience Fashion
-                      <span className="block gradient-text bg-gradient-to-r from-purple-300 via-pink-300 to-blue-300 mt-2">
+                      <span className="block gradient-text from-purple-300 via-pink-300 to-blue-300 mt-2">
                         Virtually
                       </span>
                     </h1>
@@ -371,7 +371,7 @@ function ShoppingHome() {
           onClick={() =>
             setCurrentSlide(
               (prevSlide) =>
-                (prevSlide - 1 + bannerImages.length) % bannerImages.length
+                (prevSlide - 1 + bannerImages.length) % bannerImages.length,
             )
           }
           className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30 z-10"
@@ -383,7 +383,7 @@ function ShoppingHome() {
           size="icon"
           onClick={() =>
             setCurrentSlide(
-              (prevSlide) => (prevSlide + 1) % bannerImages.length
+              (prevSlide) => (prevSlide + 1) % bannerImages.length,
             )
           }
           className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30 z-10"

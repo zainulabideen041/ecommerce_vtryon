@@ -24,11 +24,12 @@ import LoadingScreen from "./components/common/loading-screen";
 import PaypalReturnPage from "./pages/shopping-view/paypal-return";
 import PaymentSuccessPage from "./pages/shopping-view/payment-success";
 import SearchProducts from "./pages/shopping-view/search";
-import TryOnPage from "./pages/tryOnPage";
+import TryOnPage from "./pages/tryOnPage"; // RapidAPI (Default)
+import YouCamTryOn from "./pages/YouCamTryOn"; // YouCam API
 
 function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
-    (state) => state.auth
+    (state) => state.auth,
   );
   const dispatch = useDispatch();
 
@@ -39,7 +40,7 @@ function App() {
   if (isLoading) return <LoadingScreen />;
 
   return (
-    <div className="flex flex-col overflow-hidden bg-white">
+    <div className="flex flex-col overflow-hidden min-h-screen">
       <Routes>
         <Route
           path="/"
@@ -88,6 +89,7 @@ function App() {
         >
           <Route path="home" element={<ShoppingHome />} />
           <Route path="tryon/:id" element={<TryOnPage />} />
+          <Route path="tryon-youcam/:id" element={<YouCamTryOn />} />
           <Route path="listing" element={<ShoppingListing />} />
           <Route path="checkout" element={<ShoppingCheckout />} />
           <Route path="account" element={<ShoppingAccount />} />
