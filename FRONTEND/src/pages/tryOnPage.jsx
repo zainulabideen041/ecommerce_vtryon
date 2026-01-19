@@ -69,20 +69,43 @@ const TryOnPage = () => {
     setLoading(true);
 
     try {
-      const uploadedImg = new Image();
-      uploadedImg.src = exampleModelImgUrl || uploadedImageUrl;
+      let avatarImageUrl = exampleModelImgUrl || uploadedImageUrl;
 
-      await new Promise((resolve, reject) => {
-        uploadedImg.onload = () => {
-          if (uploadedImg.width < 700 || uploadedImg.height < 1000) {
-            reject(new Error("Uploaded image too small"));
-          } else {
-            resolve();
-          }
-        };
-        uploadedImg.onerror = () =>
-          reject(new Error("Failed to load uploaded image"));
-      });
+      // If uploaded image is base64, upload to backend/Cloudinary first
+      if (uploadedImageUrl && uploadedImageUrl.startsWith("data:")) {
+        toast({
+          title: "Uploading image...",
+          description: "Please wait while we process your image.",
+        });
+
+        // Convert base64 to blob
+        const base64Response = await fetch(uploadedImageUrl);
+        const blob = await base64Response.blob();
+
+        // Create FormData and upload to backend
+        const formData = new FormData();
+        formData.append("my_file", blob, "user-image.jpg");
+
+        const uploadResponse = await fetch(
+          "https://ecomtryonbackend.vercel.app/api/admin/products/upload-image",
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload image");
+        }
+
+        const uploadData = await uploadResponse.json();
+
+        if (!uploadData.success) {
+          throw new Error("Failed to upload image to server");
+        }
+
+        avatarImageUrl = uploadData.result.url;
+      }
 
       const response = await fetch(
         "https://try-on-diffusion.p.rapidapi.com/try-on-url",
@@ -96,10 +119,16 @@ const TryOnPage = () => {
           },
           body: new URLSearchParams({
             clothing_image_url: exampleClothImgUrl || productDetails.image,
-            avatar_image_url: exampleModelImgUrl || uploadedImageUrl,
+            avatar_image_url: avatarImageUrl,
           }),
-        }
+        },
       );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("RapidAPI Error:", errorData);
+        throw new Error(errorData.detail || "Try-on API request failed");
+      }
 
       const blob = await response.blob();
       const imageUrl = URL.createObjectURL(blob);
@@ -113,17 +142,10 @@ const TryOnPage = () => {
       });
     } catch (error) {
       console.error(error);
-      let description = "Something went wrong. Please try again.";
-      if (error.message === "Uploaded image too small") {
-        description =
-          "Your image is too small. It must be at least 700x1000 pixels.";
-      } else if (error.message === "Failed to load uploaded image") {
-        description = "Failed to load your uploaded image.";
-      }
 
       toast({
         title: "Try-On Failed",
-        description,
+        description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -245,11 +267,11 @@ const TryOnPage = () => {
               <h3 className="text-sm font-semibold text-muted-foreground">
                 Selected Clothing
               </h3>
-              <div className="relative rounded-xl overflow-hidden border-2 border-primary/30 bg-muted/30 shadow-md">
+              <div className="relative rounded-xl overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-muted/20 to-muted/40 shadow-lg">
                 <img
                   src={exampleClothImgUrl || productDetails?.image}
                   alt={productDetails?.title || "Clothing"}
-                  className="w-full h-64 object-cover"
+                  className="w-full h-80 object-contain p-4"
                 />
               </div>
               <Button
@@ -322,11 +344,11 @@ const TryOnPage = () => {
                 />
               ) : (
                 <>
-                  <div className="relative rounded-xl overflow-hidden border-2 border-primary/30 bg-muted/30 shadow-md">
+                  <div className="relative rounded-xl overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-muted/20 to-muted/40 shadow-lg">
                     <img
                       src={exampleModelImgUrl || uploadedImageUrl}
                       alt="Your image"
-                      className="w-full h-64 object-cover"
+                      className="w-full h-80 object-contain p-4"
                     />
                   </div>
                   <Button
@@ -375,11 +397,11 @@ const TryOnPage = () => {
               </div>
             ) : isProcessed && processedImageUrl ? (
               <div className="space-y-4">
-                <div className="relative rounded-xl overflow-hidden border-2 border-primary shadow-lg">
+                <div className="relative rounded-xl overflow-hidden border-2 border-primary shadow-2xl bg-gradient-to-br from-muted/10 to-muted/30">
                   <img
                     src={processedImageUrl}
                     alt="Try-on result"
-                    className="w-full h-[450px] object-cover"
+                    className="w-full h-[500px] object-contain p-4"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -436,7 +458,7 @@ const TryOnPage = () => {
             </div>
             <h3 className="font-semibold">Upload Your Photo</h3>
             <p className="text-sm text-muted-foreground">
-              Minimum 700x1000 pixels for best results
+              Auto-resized to 700x1000px minimum
             </p>
           </CardContent>
         </Card>
