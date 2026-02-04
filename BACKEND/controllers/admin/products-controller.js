@@ -2,6 +2,16 @@ const { UploadImage } = require("../../helpers/cloudinary");
 const Product = require("../../models/Product");
 const mongoose = require("mongoose");
 
+// Utility function to ensure HTTPS for Cloudinary URLs
+const ensureHttps = (url) => {
+  if (!url) return url;
+  // Convert HTTP Cloudinary URLs to HTTPS to prevent mixed content errors
+  if (url.startsWith("http://res.cloudinary.com")) {
+    return url.replace("http://", "https://");
+  }
+  return url;
+};
+
 const handleImageUpload = async (req, res) => {
   try {
     const b64 = Buffer.from(req.file.buffer).toString("base64");
@@ -39,7 +49,7 @@ const addProduct = async (req, res) => {
     console.log(averageReview, "averageReview");
 
     const newlyCreatedProduct = new Product({
-      image,
+      image: ensureHttps(image),
       title,
       description,
       category,
@@ -76,9 +86,15 @@ const fetchAllProducts = async (req, res) => {
       .lean()
       .exec();
 
+    // Ensure all image URLs use HTTPS
+    const productsWithHttps = listOfProducts.map((product) => ({
+      ...product,
+      image: ensureHttps(product.image),
+    }));
+
     res.status(200).json({
       success: true,
-      data: listOfProducts,
+      data: productsWithHttps,
     });
   } catch (e) {
     console.log(e);
@@ -120,7 +136,7 @@ const editProduct = async (req, res) => {
     findProduct.salePrice =
       salePrice === "" ? 0 : salePrice || findProduct.salePrice;
     findProduct.totalStock = totalStock || findProduct.totalStock;
-    findProduct.image = image || findProduct.image;
+    findProduct.image = image ? ensureHttps(image) : findProduct.image;
     findProduct.averageReview = averageReview || findProduct.averageReview;
 
     await findProduct.save();

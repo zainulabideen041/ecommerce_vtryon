@@ -1,7 +1,7 @@
 import { StarIcon, X, ShoppingCart, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent } from "../ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Separator } from "../ui/separator";
 import { Input } from "../ui/input";
 import { useDispatch, useSelector } from "react-redux";
@@ -108,6 +108,9 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="max-w-[95vw] md:max-w-[90vw] lg:max-w-[85vw] xl:max-w-[1200px] h-[90vh] p-0 overflow-hidden bg-gradient-to-br from-background to-muted/20">
+        <DialogTitle className="sr-only">
+          {productDetails?.title || "Product Details"}
+        </DialogTitle>
         <div className="grid md:grid-cols-2 gap-0 h-full max-h-full overflow-hidden">
           {/* Image Section - Left Side */}
           <div className="relative bg-gradient-to-br from-muted/30 to-muted/10 flex items-center justify-center p-6 md:p-8 overflow-hidden">

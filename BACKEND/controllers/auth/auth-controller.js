@@ -59,7 +59,7 @@ const login = async (req, res) => {
         role: user.role,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "60m" }
+      { expiresIn: "60m" },
     );
 
     res
@@ -91,16 +91,14 @@ const login = async (req, res) => {
 // AUTH CHECK MIDDLEWARE
 const authMiddleware = async (req, res, next) => {
   const token = req.cookies.token;
-  if (!token)
-    return res.status(401).json({ success: false, message: "Unauthorized" });
+  if (!token) return res.json({ success: false, message: "Unauthorized" });
 
   try {
     const decoded_user = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded_user;
     next();
   } catch (error) {
-    console.log(error);
-    res.status(401).json({ success: false, message: "Unauthorized User" });
+    res.json({ success: false, message: "Unauthorized User" });
   }
 };
 

@@ -24,13 +24,13 @@ import { getModelImage } from "@/store/tryon-model-slice";
 // YOUCAM API CONFIGURATION
 const BASE_URL = "https://yce-api-01.makeupar.com/s2s/v2.0";
 const API_KEYS = [
-  "sk-Su7wCSpg4-mlNjb-D0MxEdzFsofa9TeTKkBnOynjoRK-MGUCcmKVvq2LAkaTQjuo", // Default
   "sk-sNR7lGQSXyq7ul9RTzxkyoTCLp-KkjCfsH2BSz76KyWDxPlJ5TxkMOYB4DoxNfKx", // Backup
   "sk-Mc-jNycb0SdDGsQgrRRBqcpmnMrfClywmq-JBi89ntpiyrZryd0MV1WS4wGyFtov", // Backup
   "sk-xOKsDnSZQLpdW0t3fPjcgkEjkdlDqIndNUH97-27fcHkaL7HhobDDQdqPCINu4UO",
   "sk-dCU3-fr1PdameMaR3kR4pQ6jOfYJAcGXuGx8Ef_1bkLG7Gu1JpdFdjcNlxvsKOv-",
   "sk-38i84cDUwZo-VuO05Vq2rSXIPu6fEHm1j_IYVDHfqHVq13ApihrkniJrkUQblSqB",
   "sk-t7kcuiNGTx8yvcHkdYhQ_kUOqYjTtBqe26Q4e16JPTCw2fec8U21YaWYuekJe6xy",
+  "sk-Su7wCSpg4-mlNjb-D0MxEdzFsofa9TeTKkBnOynjoRK-MGUCcmKVvq2LAkaTQjuo",
 ];
 let currentKeyIndex = 0;
 

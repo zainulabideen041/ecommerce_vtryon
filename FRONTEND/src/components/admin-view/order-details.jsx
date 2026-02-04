@@ -1,4 +1,4 @@
-import { DialogContent } from "../ui/dialog";
+import { DialogContent, DialogTitle } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
 import { Badge } from "../ui/badge";
@@ -36,7 +36,7 @@ function AdminOrderDetailsView({ orderDetails }) {
     const newStatus = status;
 
     dispatch(
-      updateOrderStatus({ id: orderDetails?._id, orderStatus: newStatus })
+      updateOrderStatus({ id: orderDetails?._id, orderStatus: newStatus }),
     ).then((data) => {
       if (data?.payload?.success) {
         dispatch(getOrderDetailsForAdmin(orderDetails?._id));
@@ -51,6 +51,9 @@ function AdminOrderDetailsView({ orderDetails }) {
 
   return (
     <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogTitle className="sr-only">
+        Order Details - {orderDetails?._id}
+      </DialogTitle>
       {/* Header */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
