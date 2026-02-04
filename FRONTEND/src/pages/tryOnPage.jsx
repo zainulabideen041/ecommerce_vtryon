@@ -20,6 +20,16 @@ import { grid } from "ldrs";
 import { getClothImage } from "@/store/tryon-cloth-slice";
 import { getModelImage } from "@/store/tryon-model-slice";
 
+// Utility function to ensure HTTPS for Cloudinary URLs
+const ensureHttps = (url) => {
+  if (!url) return url;
+  // Convert HTTP Cloudinary URLs to HTTPS to prevent mixed content errors
+  if (url.startsWith("http://res.cloudinary.com")) {
+    return url.replace("http://", "https://");
+  }
+  return url;
+};
+
 const TryOnPage = () => {
   const [visible, setVisible] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -69,7 +79,7 @@ const TryOnPage = () => {
     setLoading(true);
 
     try {
-      let avatarImageUrl = exampleModelImgUrl || uploadedImageUrl;
+      let avatarImageUrl = ensureHttps(exampleModelImgUrl || uploadedImageUrl);
 
       // If uploaded image is base64, upload to backend/Cloudinary first
       if (uploadedImageUrl && uploadedImageUrl.startsWith("data:")) {
@@ -104,7 +114,7 @@ const TryOnPage = () => {
           throw new Error("Failed to upload image to server");
         }
 
-        avatarImageUrl = uploadData.result.url;
+        avatarImageUrl = ensureHttps(uploadData.result.url);
       }
 
       const response = await fetch(
@@ -118,7 +128,9 @@ const TryOnPage = () => {
             "Content-Type": "application/x-www-form-urlencoded",
           },
           body: new URLSearchParams({
-            clothing_image_url: exampleClothImgUrl || productDetails.image,
+            clothing_image_url: ensureHttps(
+              exampleClothImgUrl || productDetails.image,
+            ),
             avatar_image_url: avatarImageUrl,
           }),
         },
@@ -240,9 +252,11 @@ const TryOnPage = () => {
                   clothImageList.map((clothImgItem, index) => (
                     <div
                       key={index}
-                      onClick={() => setExampleClothImgUrl(clothImgItem.image)}
+                      onClick={() =>
+                        setExampleClothImgUrl(ensureHttps(clothImgItem.image))
+                      }
                       className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${
-                        exampleClothImgUrl === clothImgItem.image
+                        exampleClothImgUrl === ensureHttps(clothImgItem.image)
                           ? "border-primary shadow-lg ring-2 ring-primary/20"
                           : "border-transparent hover:border-primary/50"
                       }`}
@@ -305,9 +319,11 @@ const TryOnPage = () => {
                   modelImageList.map((modelImgItem, index) => (
                     <div
                       key={index}
-                      onClick={() => setExampleModelImgUrl(modelImgItem.image)}
+                      onClick={() =>
+                        setExampleModelImgUrl(ensureHttps(modelImgItem.image))
+                      }
                       className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${
-                        exampleModelImgUrl === modelImgItem.image
+                        exampleModelImgUrl === ensureHttps(modelImgItem.image)
                           ? "border-primary shadow-lg ring-2 ring-primary/20"
                           : "border-transparent hover:border-primary/50"
                       }`}

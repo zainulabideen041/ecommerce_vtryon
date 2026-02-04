@@ -34,6 +34,16 @@ const API_KEYS = [
 ];
 let currentKeyIndex = 0;
 
+// Utility function to ensure HTTPS for Cloudinary URLs
+const ensureHttps = (url) => {
+  if (!url) return url;
+  // Convert HTTP Cloudinary URLs to HTTPS to prevent mixed content errors
+  if (url.startsWith("http://res.cloudinary.com")) {
+    return url.replace("http://", "https://");
+  }
+  return url;
+};
+
 async function fetchWithRetry(url, options = {}) {
   const makeRequest = async (key) => {
     const headers = {
@@ -164,7 +174,7 @@ const YouCamTryOn = () => {
     setStatus("Starting process...");
 
     try {
-      let humanImageUrl = exampleModelImgUrl || uploadedImageUrl;
+      let humanImageUrl = ensureHttps(exampleModelImgUrl || uploadedImageUrl);
 
       // If base64, we need to upload to a public URL or convert to blob directly.
       // Since our uploadToYouCam takes a URL, if it's base64, we can fetch(base64) to get blob.
@@ -175,7 +185,9 @@ const YouCamTryOn = () => {
       const srcFileId = await uploadToYouCam(humanImageUrl, "cloth");
 
       setStatus("Uploading garment image...");
-      const garmentUrl = exampleClothImgUrl || productDetails.image;
+      const garmentUrl = ensureHttps(
+        exampleClothImgUrl || productDetails.image,
+      );
       const refFileId = await uploadToYouCam(garmentUrl, "cloth");
 
       setStatus("Starting AI Task...");
@@ -333,9 +345,11 @@ const YouCamTryOn = () => {
                   clothImageList.map((clothImgItem, index) => (
                     <div
                       key={index}
-                      onClick={() => setExampleClothImgUrl(clothImgItem.image)}
+                      onClick={() =>
+                        setExampleClothImgUrl(ensureHttps(clothImgItem.image))
+                      }
                       className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${
-                        exampleClothImgUrl === clothImgItem.image
+                        exampleClothImgUrl === ensureHttps(clothImgItem.image)
                           ? "border-primary shadow-lg ring-2 ring-primary/20"
                           : "border-transparent hover:border-primary/50"
                       }`}
@@ -411,9 +425,11 @@ const YouCamTryOn = () => {
                   modelImageList.map((modelImgItem, index) => (
                     <div
                       key={index}
-                      onClick={() => setExampleModelImgUrl(modelImgItem.image)}
+                      onClick={() =>
+                        setExampleModelImgUrl(ensureHttps(modelImgItem.image))
+                      }
                       className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${
-                        exampleModelImgUrl === modelImgItem.image
+                        exampleModelImgUrl === ensureHttps(modelImgItem.image)
                           ? "border-primary shadow-lg ring-2 ring-primary/20"
                           : "border-transparent hover:border-primary/50"
                       }`}
