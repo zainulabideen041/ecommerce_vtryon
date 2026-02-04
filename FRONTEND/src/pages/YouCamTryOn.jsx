@@ -205,7 +205,6 @@ const YouCamTryOn = () => {
         throw new Error(`Task Start Failed: ${JSON.stringify(startData)}`);
 
       const taskId = startData.data.task_id;
-      console.log("Task Started:", taskId);
 
       // Poll
       setStatus("Processing with AI...");
@@ -234,9 +233,6 @@ const YouCamTryOn = () => {
             clearInterval(pollInterval);
             throw new Error(pollData.data.error || "Task failed");
           } else {
-            console.log(
-              `Polling attempt ${attempts}: ${pollData.data.task_status}`,
-            );
             if (attempts >= maxAttempts) {
               clearInterval(pollInterval);
               throw new Error("Polling timeout");
