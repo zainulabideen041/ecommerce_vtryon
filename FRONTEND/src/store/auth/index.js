@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "https://ecomtryonbackend.vercel.app/api/auth";
-// const baseURL = "http://localhost:5000/api/auth";
+import { API_BASE_URL } from "@/config";
+const baseURL = `${API_BASE_URL}/auth`;
 
 const initialState = {
   isAuthenticated: false,
@@ -18,7 +18,7 @@ export const registerUser = createAsyncThunk(
     });
 
     return response.data;
-  }
+  },
 );
 
 export const loginUser = createAsyncThunk(
@@ -30,7 +30,7 @@ export const loginUser = createAsyncThunk(
     });
 
     return response.data;
-  }
+  },
 );
 
 export const logoutUser = createAsyncThunk(
@@ -42,11 +42,11 @@ export const logoutUser = createAsyncThunk(
       {},
       {
         withCredentials: true,
-      }
+      },
     );
 
     return response.data;
-  }
+  },
 );
 
 export const checkAuth = createAsyncThunk(
@@ -62,7 +62,7 @@ export const checkAuth = createAsyncThunk(
     });
 
     return response.data;
-  }
+  },
 );
 
 const authSlice = createSlice({

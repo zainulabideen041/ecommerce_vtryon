@@ -17,46 +17,37 @@ import {
   Store,
   ShoppingBag,
   ShirtIcon,
+  Star,
 } from "lucide-react";
 
-// Professional Unsplash images for virtual try-on and fashion e-commerce
 const bannerImages = [
   {
     image:
       "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920&q=80",
-    alt: "Fashion Shopping - Women's Collection",
+    alt: "Women's Collection",
   },
   {
     image:
       "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1920&q=80",
-    alt: "Luxury Fashion Store",
+    alt: "Luxury Fashion",
   },
   {
     image:
       "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1920&q=80",
-    alt: "Women's Fashion Accessories",
+    alt: "Fashion Accessories",
   },
   {
     image:
       "https://images.unsplash.com/photo-1445205170230-053b83016050?w=1920&q=80",
-    alt: "Men's Fashion Collection",
+    alt: "Men's Collection",
   },
   {
     image:
       "https://images.unsplash.com/photo-1558769132-cb1aea1c8e77?w=1920&q=80",
-    alt: "Modern Fashion Boutique",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1920&q=80",
-    alt: "Premium Clothing Display",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?w=1920&q=80",
-    alt: "Fashion E-commerce Shopping",
+    alt: "Fashion Boutique",
   },
 ];
+
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -153,84 +144,88 @@ const brandsWithIcon = [
   },
 ];
 
-// Custom Typewriter Component
+/* ── Typewriter ──────────────────────────────────── */
 function TypewriterText() {
   const messages = [
     "Try Before You Buy",
     "AI-Powered Virtual Try-On",
     "Shop Smarter, Look Better",
-    "Transform Your Shopping Experience",
     "See Yourself in Every Style",
   ];
-
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const [currentText, setCurrentText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [idx, setIdx] = useState(0);
+  const [text, setText] = useState("");
+  const [del, setDel] = useState(false);
 
   useEffect(() => {
-    const currentMessage = messages[currentMessageIndex];
-    const typingSpeed = isDeleting ? 50 : 100;
-    const pauseTime = isDeleting ? 500 : 2000;
-
-    const timer = setTimeout(() => {
-      if (!isDeleting && currentText === currentMessage) {
-        // Pause before deleting
-        setTimeout(() => setIsDeleting(true), pauseTime);
-      } else if (isDeleting && currentText === "") {
-        // Move to next message
-        setIsDeleting(false);
-        setCurrentMessageIndex((prev) => (prev + 1) % messages.length);
-      } else {
-        // Type or delete character
-        setCurrentText(
-          isDeleting
-            ? currentMessage.substring(0, currentText.length - 1)
-            : currentMessage.substring(0, currentText.length + 1),
+    const msg = messages[idx];
+    const t = setTimeout(
+      () => {
+        if (!del && text === msg) {
+          setTimeout(() => setDel(true), 2000);
+          return;
+        }
+        if (del && text === "") {
+          setDel(false);
+          setIdx((i) => (i + 1) % messages.length);
+          return;
+        }
+        setText(
+          del ? msg.slice(0, text.length - 1) : msg.slice(0, text.length + 1),
         );
-      }
-    }, typingSpeed);
-
-    return () => clearTimeout(timer);
-  }, [currentText, isDeleting, currentMessageIndex]);
+      },
+      del ? 40 : 80,
+    );
+    return () => clearTimeout(t);
+  }, [text, del, idx]);
 
   return (
-    <div className="text-2xl md:text-3xl lg:text-4xl font-semibold text-white/95 min-h-[3rem] drop-shadow-lg">
-      {currentText}
-      <span className="animate-pulse">|</span>
+    <p className="text-lg md:text-2xl font-light text-white/80 tracking-wide min-h-[2rem]">
+      {text}
+      <span className="animate-pulse opacity-70">|</span>
+    </p>
+  );
+}
+
+/* ── Section heading ─────────────────────────────── */
+function SectionHeading({ title, subtitle }) {
+  return (
+    <div className="text-center mb-8 space-y-2">
+      <h2 className="font-display font-semibold text-3xl md:text-5xl tracking-tight">
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto">
+          {subtitle}
+        </p>
+      )}
+      <div className="flex justify-center mt-3">
+        <div className="gold-divider" />
+      </div>
     </div>
   );
 }
 
+/* ── Main component ──────────────────────────────── */
 function ShoppingHome() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { productList, productDetails } = useSelector(
-    (state) => state.shopProducts,
-  );
-
+  const { productList, productDetails } = useSelector((s) => s.shopProducts);
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
-
-  const { user } = useSelector((state) => state.auth);
-
+  const { user } = useSelector((s) => s.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  function handleNavigateToListingPage(getCurrentItem, section) {
+  function handleNavigateToListingPage(item, section) {
     sessionStorage.removeItem("filters");
-    const currentFilter = {
-      [section]: [getCurrentItem.id],
-    };
-
-    sessionStorage.setItem("filters", JSON.stringify(currentFilter));
-    navigate(`/shop/listing`);
+    sessionStorage.setItem("filters", JSON.stringify({ [section]: [item.id] }));
+    navigate("/shop/listing");
   }
 
-  function handleGetProductDetails(getCurrentProductId) {
-    dispatch(fetchProductDetails(getCurrentProductId));
+  function handleGetProductDetails(id) {
+    dispatch(fetchProductDetails(id));
   }
 
-  function handleAddtoCart(getCurrentProductId) {
-    // Check if user is authenticated
+  function handleAddtoCart(id) {
     if (!user) {
       toast({
         title: "Login required",
@@ -240,36 +235,26 @@ function ShoppingHome() {
       navigate("/auth/login");
       return;
     }
-
-    dispatch(
-      addToCart({
-        userId: user?.id,
-        productId: getCurrentProductId,
-        quantity: 1,
-      }),
-    ).then((data) => {
-      if (data?.payload?.success) {
-        dispatch(fetchCartItems(user?.id));
-        toast({
-          title: "Added to cart",
-          description: "Product has been added to your cart",
-        });
-      }
-    });
+    dispatch(addToCart({ userId: user.id, productId: id, quantity: 1 })).then(
+      (d) => {
+        if (d?.payload?.success) {
+          dispatch(fetchCartItems(user.id));
+          toast({ title: "Added to cart" });
+        }
+      },
+    );
   }
 
   useEffect(() => {
     if (productDetails !== null) setOpenDetailsDialog(true);
   }, [productDetails]);
-
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prevSlide) => (prevSlide + 1) % bannerImages.length);
-    }, 5000);
-
-    return () => clearInterval(timer);
+    const t = setInterval(
+      () => setCurrentSlide((s) => (s + 1) % bannerImages.length),
+      5000,
+    );
+    return () => clearInterval(t);
   }, []);
-
   useEffect(() => {
     dispatch(
       fetchAllFilteredProducts({
@@ -281,167 +266,150 @@ function ShoppingHome() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section with Carousel */}
-      <div className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden">
-        {bannerImages.map((slide, index) => (
+      {/* ── Hero Carousel ─────────────────────────────── */}
+      <div className="relative w-full h-[480px] md:h-[560px] lg:h-[640px] overflow-hidden">
+        {bannerImages.map((slide, i) => (
           <div
-            key={index}
-            className={`${
-              index === currentSlide ? "opacity-100" : "opacity-0"
-            } absolute inset-0 transition-opacity duration-1000`}
+            key={i}
+            className={`absolute inset-0 transition-opacity duration-1000 ${i === currentSlide ? "opacity-100" : "opacity-0"}`}
           >
             <img
               src={slide.image}
               alt={slide.alt}
               className="w-full h-full object-cover"
             />
-            {/* Enhanced Overlay - Gradient with subtle white tint for better text visibility */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/40 to-white/10" />
-            <div className="absolute inset-0 bg-white/5" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
 
-            {/* Hero Content */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="container mx-auto px-4">
-                <div className="max-w-4xl text-center text-white space-y-8 slide-up">
-                  {/* Main Heading with Typewriter */}
-                  <div className="space-y-4">
-                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold tracking-tight drop-shadow-2xl">
-                      Experience Fashion
-                      <span className="block gradient-text from-purple-300 via-pink-300 to-blue-300 mt-2">
-                        Virtually
-                      </span>
-                    </h1>
+              <div className="container mx-auto px-6 text-center text-white space-y-5 slide-up max-w-3xl">
+                {/* Eyebrow */}
+                <div className="flex justify-center">
+                  <span className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.25em] uppercase text-gold border border-gold/40 bg-black/30 backdrop-blur-sm px-4 py-1.5 rounded-full">
+                    <Star className="w-3 h-3 fill-gold" />
+                    Premium Fashion Store
+                  </span>
+                </div>
 
-                    {/* Typewriter Effect - Custom Implementation */}
-                    <TypewriterText />
-                  </div>
+                {/* Main heading */}
+                <h1 className="font-display font-bold text-5xl md:text-7xl tracking-tight drop-shadow-2xl">
+                  Experience Fashion
+                  <span className="block text-gradient-gold italic">
+                    Virtually
+                  </span>
+                </h1>
 
-                  {/* Description */}
-                  <p className="text-lg md:text-xl lg:text-2xl text-white/95 max-w-3xl mx-auto leading-relaxed drop-shadow-lg">
-                    Revolutionize your fashion journey with cutting-edge AI
-                    technology. Visualize how clothes look on you before making
-                    a purchase.
-                  </p>
+                <TypewriterText />
 
-                  {/* Feature Highlights */}
-                  <div className="flex flex-wrap justify-center gap-6 md:gap-8 text-sm md:text-base text-white/90">
-                    <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                      <Sparkles className="w-4 h-4 text-purple-300" />
-                      <span className="font-medium">AI-Powered</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                      <TrendingUp className="w-4 h-4 text-blue-300" />
-                      <span className="font-medium">Latest Trends</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                      <ShirtIcon className="w-4 h-4 text-pink-300" />
-                      <span className="font-medium">Premium Brands</span>
-                    </div>
-                  </div>
+                <p className="text-white/70 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
+                  Revolutionize your shopping journey with cutting-edge AI
+                  technology. Visualize how clothes look on you before you buy.
+                </p>
 
-                  {/* CTA Buttons */}
-                  <div className="flex flex-wrap gap-4 justify-center pt-4">
-                    <Button
-                      size="lg"
-                      onClick={() => navigate("/shop/listing")}
-                      className="group bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 shadow-2xl text-base md:text-lg px-8 py-6"
+                {/* Feature chips */}
+                <div className="flex flex-wrap justify-center gap-3 text-xs text-white/80">
+                  {[
+                    ["Sparkles", "AI-Powered"],
+                    ["TrendingUp", "Latest Trends"],
+                    ["ShirtIcon", "Premium Brands"],
+                  ].map(([, label]) => (
+                    <div
+                      key={label}
+                      className="flex items-center gap-1.5 bg-white/10 border border-white/15 px-3 py-1.5 rounded-full backdrop-blur-sm"
                     >
-                      Shop Now
-                      <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className="bg-white/15 backdrop-blur-md border-white/30 text-white hover:bg-white/25 shadow-xl text-base md:text-lg px-8 py-6"
-                    >
-                      <Sparkles className="w-5 h-5 mr-2" />
-                      Try Virtual Try-On
-                    </Button>
-                  </div>
+                      {label}
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTAs */}
+                <div className="flex flex-wrap gap-3 justify-center pt-2">
+                  <Button
+                    size="lg"
+                    onClick={() => navigate("/shop/listing")}
+                    className="bg-white text-foreground hover:bg-white/90 shadow-xl font-semibold px-8 h-12 text-sm"
+                  >
+                    Shop Now <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-white/40 text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm px-8 h-12 text-sm"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Try Virtual Try-On
+                  </Button>
                 </div>
               </div>
             </div>
           </div>
         ))}
 
-        {/* Navigation Buttons */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() =>
-            setCurrentSlide(
-              (prevSlide) =>
-                (prevSlide - 1 + bannerImages.length) % bannerImages.length,
-            )
-          }
-          className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30 z-10"
-        >
-          <ChevronLeftIcon className="w-5 h-5" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() =>
-            setCurrentSlide(
-              (prevSlide) => (prevSlide + 1) % bannerImages.length,
-            )
-          }
-          className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30 z-10"
-        >
-          <ChevronRightIcon className="w-5 h-5" />
-        </Button>
+        {/* Prev / Next */}
+        {[
+          {
+            dir: "prev",
+            cls: "left-4",
+            handler: () =>
+              setCurrentSlide(
+                (s) => (s - 1 + bannerImages.length) % bannerImages.length,
+              ),
+            Icon: ChevronLeftIcon,
+          },
+          {
+            dir: "next",
+            cls: "right-4",
+            handler: () =>
+              setCurrentSlide((s) => (s + 1) % bannerImages.length),
+            Icon: ChevronRightIcon,
+          },
+        ].map(({ dir, cls, handler, Icon }) => (
+          <button
+            key={dir}
+            onClick={handler}
+            className={`absolute top-1/2 ${cls} -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/15 border border-white/25 text-white hover:bg-white/30 backdrop-blur-sm transition-all flex items-center justify-center`}
+          >
+            <Icon className="w-5 h-5" />
+          </button>
+        ))}
 
-        {/* Slide Indicators */}
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
-          {bannerImages.map((_, index) => (
+        {/* Dots */}
+        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+          {bannerImages.map((_, i) => (
             <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentSlide
-                  ? "bg-white w-8"
-                  : "bg-white/50 hover:bg-white/75"
-              }`}
+              key={i}
+              onClick={() => setCurrentSlide(i)}
+              className={`rounded-full transition-all duration-300 ${i === currentSlide ? "w-6 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/40 hover:bg-white/70"}`}
             />
           ))}
         </div>
       </div>
 
-      {/* Shop by Category */}
-      <section className="py-5 mt-5 md:py-10 bg-gradient-to-b from-background to-muted/20">
+      {/* ── Shop by Category ──────────────────────────── */}
+      <section className="section-pad bg-gradient-to-b from-background to-muted/20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 space-y-3">
-            <h2 className="text-4xl md:text-6xl font-display font-bold tracking-tight">
-              Shop by Category
-            </h2>
-            <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
-              Discover your style across our curated collections
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-            {categoriesWithIcon.map((categoryItem, index) => (
+          <SectionHeading
+            title="Shop by Category"
+            subtitle="Discover your style across our curated collections"
+          />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+            {categoriesWithIcon.map((cat, i) => (
               <Card
-                key={index}
-                onClick={() =>
-                  handleNavigateToListingPage(categoryItem, "category")
-                }
-                className="group cursor-pointer border-2 hover:border-primary transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 overflow-hidden relative"
-                style={{ animationDelay: `${index * 100}ms` }}
+                key={i}
+                onClick={() => handleNavigateToListingPage(cat, "category")}
+                className="group cursor-pointer border border-border/50 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden relative h-40 md:h-48"
+                style={{ animationDelay: `${i * 80}ms` }}
               >
-                {/* Background Image with Overlay */}
                 <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
-                  style={{ backgroundImage: `url(${categoryItem.bgImage})` }}
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                  style={{ backgroundImage: `url(${cat.bgImage})` }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
-
-                {/* Content */}
-                <CardContent className="relative flex flex-col items-center justify-center p-6 md:p-8 space-y-4 z-10">
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white/20 backdrop-blur-md shadow-lg flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300 border border-white/30">
-                    <categoryItem.icon className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+                <CardContent className="relative flex flex-col items-center justify-end pb-5 h-full z-10 p-0">
+                  <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center group-hover:bg-white/25 transition-all border border-white/20 mb-2">
+                    <cat.icon className="w-5 h-5 text-white" />
                   </div>
-                  <span className="font-semibold text-base md:text-lg text-white drop-shadow-lg">
-                    {categoryItem.label}
+                  <span className="font-semibold text-sm text-white drop-shadow">
+                    {cat.label}
                   </span>
                 </CardContent>
               </Card>
@@ -450,39 +418,32 @@ function ShoppingHome() {
         </div>
       </section>
 
-      {/* Shop by Brand */}
-      <section className="py-5 mt-5 md:py-10">
+      {/* ── Shop by Brand ────────────────────────────── */}
+      <section className="section-pad">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 space-y-3">
-            <h2 className="text-4xl md:text-6xl font-display font-bold tracking-tight">
-              Shop by Brand
-            </h2>
-            <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
-              Explore top fashion brands all in one place
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-            {brandsWithIcon.map((brandItem, index) => (
+          <SectionHeading
+            title="Shop by Brand"
+            subtitle="The world's finest labels, curated for you"
+          />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+            {brandsWithIcon.map((brand, i) => (
               <Card
-                key={index}
-                onClick={() => handleNavigateToListingPage(brandItem, "brand")}
-                className="group cursor-pointer border-2 hover:border-primary transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 overflow-hidden relative"
-                style={{ animationDelay: `${index * 100}ms` }}
+                key={i}
+                onClick={() => handleNavigateToListingPage(brand, "brand")}
+                className="group cursor-pointer border border-border/50 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden relative h-32 md:h-36"
+                style={{ animationDelay: `${i * 80}ms` }}
               >
-                {/* Background Image with Overlay */}
                 <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
-                  style={{ backgroundImage: `url(${brandItem.bgImage})` }}
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                  style={{ backgroundImage: `url(${brand.bgImage})` }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
-
-                {/* Content */}
-                <CardContent className="relative flex flex-col items-center justify-center p-6 space-y-3 z-10">
-                  <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-md shadow-md flex items-center justify-center group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300 border border-white/30">
-                    <brandItem.icon className="w-7 h-7 text-white" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+                <CardContent className="relative flex flex-col items-center justify-end pb-4 h-full z-10 p-0">
+                  <div className="w-10 h-10 rounded-lg bg-white/15 backdrop-blur-md flex items-center justify-center group-hover:bg-white/25 transition-all border border-white/20 mb-1.5">
+                    <brand.icon className="w-5 h-5 text-white" />
                   </div>
-                  <span className="font-semibold text-lg text-white drop-shadow-lg">
-                    {brandItem.label}
+                  <span className="font-semibold text-sm text-white drop-shadow">
+                    {brand.label}
                   </span>
                 </CardContent>
               </Card>
@@ -491,55 +452,52 @@ function ShoppingHome() {
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section className="py-5 mt-5 md:py-10 bg-gradient-to-b from-muted/20 to-background">
+      {/* ── Trending Products ─────────────────────────── */}
+      <section className="section-pad bg-gradient-to-b from-muted/20 to-background">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-12">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-16 h-16 text-primary mr-2" />
-                <h2 className="text-4xl md:text-6xl font-display font-bold tracking-tight">
-                  Trending Products
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <TrendingUp className="w-6 h-6 text-primary" />
+                <h2 className="font-display font-semibold text-3xl md:text-5xl tracking-tight">
+                  Trending Now
                 </h2>
               </div>
-              <p className="text-muted-foreground text-xl text-center">
-                Most popular items this week
+              <p className="text-muted-foreground text-sm ml-9">
+                Most popular picks this week
               </p>
             </div>
             <Button
               variant="outline"
+              size="sm"
               onClick={() => navigate("/shop/listing")}
-              className="hidden md:flex"
+              className="hidden md:flex gap-2 text-xs"
             >
-              View All
-              <ArrowRight className="w-4 h-4" />
+              View All <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {productList && productList.length > 0
-              ? productList.slice(0, 8).map((productItem, index) => (
-                  <div
-                    key={index}
-                    className="fade-in"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <ShoppingProductTile
-                      handleGetProductDetails={handleGetProductDetails}
-                      product={productItem}
-                      handleAddtoCart={handleAddtoCart}
-                    />
-                  </div>
-                ))
-              : null}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {productList?.slice(0, 8).map((item, i) => (
+              <div
+                key={i}
+                className="fade-in"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <ShoppingProductTile
+                  handleGetProductDetails={handleGetProductDetails}
+                  product={item}
+                  handleAddtoCart={handleAddtoCart}
+                />
+              </div>
+            ))}
           </div>
-          <div className="mt-8 text-center md:hidden">
+          <div className="mt-6 text-center md:hidden">
             <Button
               variant="outline"
               onClick={() => navigate("/shop/listing")}
-              className="w-full sm:w-auto"
+              className="gap-2 text-sm"
             >
-              View All Products
-              <ArrowRight className="w-4 h-4" />
+              View All Products <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
         </div>

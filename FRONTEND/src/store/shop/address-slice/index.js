@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "https://ecomtryonbackend.vercel.app/api/shop/address";
+import { API_BASE_URL } from "@/config";
+const baseURL = `${API_BASE_URL}/shop/address`;
 
 const initialState = {
   isLoading: false,
@@ -13,7 +14,7 @@ export const addNewAddress = createAsyncThunk(
     const response = await axios.post(`${baseURL}/add`, formData);
 
     return response.data;
-  }
+  },
 );
 
 export const fetchAllAddresses = createAsyncThunk(
@@ -22,7 +23,7 @@ export const fetchAllAddresses = createAsyncThunk(
     const response = await axios.get(`${baseURL}/get/${userId}`);
 
     return response.data;
-  }
+  },
 );
 
 export const editaAddress = createAsyncThunk(
@@ -30,22 +31,22 @@ export const editaAddress = createAsyncThunk(
   async ({ userId, addressId, formData }) => {
     const response = await axios.put(
       `${baseURL}/update/${userId}/${addressId}`,
-      formData
+      formData,
     );
 
     return response.data;
-  }
+  },
 );
 
 export const deleteAddress = createAsyncThunk(
   "/addresses/deleteAddress",
   async ({ userId, addressId }) => {
     const response = await axios.delete(
-      `${baseURL}/delete/${userId}/${addressId}`
+      `${baseURL}/delete/${userId}/${addressId}`,
     );
 
     return response.data;
-  }
+  },
 );
 
 const addressSlice = createSlice({

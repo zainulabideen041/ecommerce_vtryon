@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "https://ecomtryonbackend.vercel.app/api/shop/review";
+import { API_BASE_URL } from "@/config";
+const baseURL = `${API_BASE_URL}/shop/review`;
 
 const initialState = {
   isLoading: false,
@@ -13,7 +14,7 @@ export const addReview = createAsyncThunk(
     const response = await axios.post(`${baseURL}/add`, formdata);
 
     return response.data;
-  }
+  },
 );
 
 export const getReviews = createAsyncThunk("/order/getReviews", async (id) => {

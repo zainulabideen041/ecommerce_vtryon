@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "https://ecomtryonbackend.vercel.app/api/common/feature";
+import { API_BASE_URL } from "@/config";
+const baseURL = `${API_BASE_URL}/common/feature`;
 
 const initialState = {
   isLoading: false,
@@ -13,7 +14,7 @@ export const getFeatureImages = createAsyncThunk(
     const response = await axios.get(`${baseURL}/get`);
 
     return response.data;
-  }
+  },
 );
 
 export const addFeatureImage = createAsyncThunk(
@@ -24,7 +25,7 @@ export const addFeatureImage = createAsyncThunk(
     });
 
     return response.data;
-  }
+  },
 );
 
 export const deleteFeatureImage = createAsyncThunk(
@@ -33,7 +34,7 @@ export const deleteFeatureImage = createAsyncThunk(
     const response = await axios.delete(`${baseURL}/delete/${id}`);
 
     return response.data;
-  }
+  },
 );
 
 const commonSlice = createSlice({

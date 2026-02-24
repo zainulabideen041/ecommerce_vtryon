@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "https://ecomtryonbackend.vercel.app/api/admin/orders";
+import { API_BASE_URL } from "@/config";
+const baseURL = `${API_BASE_URL}/admin/orders`;
 
 const initialState = {
   orderList: [],
@@ -13,7 +14,7 @@ export const getAllOrdersForAdmin = createAsyncThunk(
     const response = await axios.get(`${baseURL}/get`);
 
     return response.data;
-  }
+  },
 );
 
 export const getOrderDetailsForAdmin = createAsyncThunk(
@@ -22,7 +23,7 @@ export const getOrderDetailsForAdmin = createAsyncThunk(
     const response = await axios.get(`${baseURL}/details/${id}`);
 
     return response.data;
-  }
+  },
 );
 
 export const updateOrderStatus = createAsyncThunk(
@@ -33,7 +34,7 @@ export const updateOrderStatus = createAsyncThunk(
     });
 
     return response.data;
-  }
+  },
 );
 
 export const deleteOrder = createAsyncThunk(
@@ -42,7 +43,7 @@ export const deleteOrder = createAsyncThunk(
     const response = await axios.delete(`${baseURL}/delete/${id}`);
 
     return response.data;
-  }
+  },
 );
 
 const adminOrderSlice = createSlice({

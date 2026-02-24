@@ -1,6 +1,7 @@
 import axios from "axios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-const baseURL = "https://ecomtryonbackend.vercel.app/api/shop/cart";
+import { API_BASE_URL } from "@/config";
+const baseURL = `${API_BASE_URL}/shop/cart`;
 
 const initialState = {
   cartItems: [],
@@ -17,7 +18,7 @@ export const addToCart = createAsyncThunk(
     });
 
     return response.data;
-  }
+  },
 );
 
 export const fetchCartItems = createAsyncThunk(
@@ -26,7 +27,7 @@ export const fetchCartItems = createAsyncThunk(
     const response = await axios.get(`${baseURL}/get/${userId}`);
 
     return response.data;
-  }
+  },
 );
 
 export const deleteCartItem = createAsyncThunk(
@@ -35,7 +36,7 @@ export const deleteCartItem = createAsyncThunk(
     const response = await axios.delete(`${baseURL}/${userId}/${productId}`);
 
     return response.data;
-  }
+  },
 );
 
 export const updateCartQuantity = createAsyncThunk(
@@ -48,7 +49,7 @@ export const updateCartQuantity = createAsyncThunk(
     });
 
     return response.data;
-  }
+  },
 );
 
 const shoppingCartSlice = createSlice({

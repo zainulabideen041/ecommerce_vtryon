@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "https://ecomtryonbackend.vercel.app/api/common/tryon";
+import { API_BASE_URL } from "@/config";
+const baseURL = `${API_BASE_URL}/common/tryon`;
 
 const initialState = {
   isLoading: false,
@@ -13,7 +14,7 @@ export const getClothImage = createAsyncThunk(
     const response = await axios.get(`${baseURL}/getcloth`);
 
     return response.data;
-  }
+  },
 );
 
 export const addClothImage = createAsyncThunk(
@@ -24,7 +25,7 @@ export const addClothImage = createAsyncThunk(
     });
 
     return response.data;
-  }
+  },
 );
 
 export const deleteClothImage = createAsyncThunk(
@@ -33,7 +34,7 @@ export const deleteClothImage = createAsyncThunk(
     const response = await axios.delete(`${baseURL}/deletecloth/${id}`);
 
     return response.data;
-  }
+  },
 );
 
 const tryonClothSlice = createSlice({

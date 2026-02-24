@@ -1,6 +1,6 @@
 import LocalImageUpload from "@/components/shopping-view/local-image-upload";
 import { fetchProductDetails } from "@/store/shop/products-slice";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Sparkles,
@@ -90,6 +90,31 @@ const YouCamTryOn = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  // Tracks all Cloudinary URLs uploaded during this session so we can clean them up
+  const tempCloudinaryUrls = useRef([]);
+
+  const BACKEND_URL = "https://ecomtryonbackend.vercel.app";
+
+  // Delete a single Cloudinary image via backend
+  async function deleteCloudinaryImage(imageUrl) {
+    try {
+      await fetch(`${BACKEND_URL}/api/admin/products/delete-image`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl }),
+      });
+    } catch (err) {
+      console.error("Cloudinary cleanup failed:", err);
+    }
+  }
+
+  // Delete all tracked temporary Cloudinary URLs and clear the list
+  async function cleanupAllTempImages() {
+    const urls = [...tempCloudinaryUrls.current];
+    tempCloudinaryUrls.current = [];
+    await Promise.all(urls.map((url) => deleteCloudinaryImage(url)));
+  }
+
   grid.register();
 
   const { productDetails } = useSelector((state) => state.shopProducts);
@@ -101,6 +126,42 @@ const YouCamTryOn = () => {
     dispatch(getClothImage());
     dispatch(getModelImage());
   }, [dispatch, id]);
+
+  // Cleanup: fires when user navigates away within the app (React unmount)
+  useEffect(() => {
+    return () => {
+      const urls = [...tempCloudinaryUrls.current];
+      if (urls.length > 0) {
+        tempCloudinaryUrls.current = [];
+        urls.forEach((url) =>
+          fetch(`${BACKEND_URL}/api/admin/products/delete-image`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imageUrl: url }),
+          }).catch(() => {}),
+        );
+      }
+    };
+  }, []);
+
+  // Cleanup: fires when user closes the tab / browser (beforeunload)
+  // sendBeacon is the only reliable way to fire a request during unload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const urls = tempCloudinaryUrls.current;
+      if (urls.length === 0) return;
+      urls.forEach((url) => {
+        const payload = JSON.stringify({ imageUrl: url });
+        navigator.sendBeacon(
+          `${BACKEND_URL}/api/admin/products/delete-image-beacon`,
+          new Blob([payload], { type: "application/json" }),
+        );
+      });
+      tempCloudinaryUrls.current = [];
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
 
   // --- YOUCAM CLIENT-SIDE LOGIC ---
 
@@ -260,7 +321,8 @@ const YouCamTryOn = () => {
   }
 
   // --- HELPER FUNCTIONS ---
-  function handleImageChange() {
+  async function handleImageChange() {
+    await cleanupAllTempImages();
     setUploadedImageUrl("");
     setProcessedImageUrl(null);
     setExampleModelImgUrl(null);
@@ -281,7 +343,8 @@ const YouCamTryOn = () => {
     }
   }
 
-  function handleReset() {
+  async function handleReset() {
+    await cleanupAllTempImages();
     setExampleClothImgUrl(null);
     setExampleModelImgUrl(null);
     setUploadedImageUrl("");

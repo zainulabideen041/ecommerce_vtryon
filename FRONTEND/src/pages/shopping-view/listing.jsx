@@ -19,7 +19,7 @@ import {
 import { ArrowUpDownIcon, SlidersHorizontal, X, Package } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
@@ -44,7 +44,7 @@ function createSearchParamsHelper(filterParams) {
 function ShoppingListing() {
   const dispatch = useDispatch();
   const { productList, productDetails } = useSelector(
-    (state) => state.shopProducts
+    (state) => state.shopProducts,
   );
   const { cartItems } = useSelector((state) => state.shopCart);
   const { user } = useSelector((state) => state.auth);
@@ -54,6 +54,7 @@ function ShoppingListing() {
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const [openFilterSheet, setOpenFilterSheet] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const categorySearchParam = searchParams.get("category");
 
@@ -103,7 +104,7 @@ function ShoppingListing() {
 
     if (getCartItems.length) {
       const indexOfCurrentItem = getCartItems.findIndex(
-        (item) => item.productId === getCurrentProductId
+        (item) => item.productId === getCurrentProductId,
       );
       if (indexOfCurrentItem > -1) {
         const getQuantity = getCartItems[indexOfCurrentItem].quantity;
@@ -124,7 +125,7 @@ function ShoppingListing() {
         userId: user?.id,
         productId: getCurrentProductId,
         quantity: 1,
-      })
+      }),
     ).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
@@ -156,7 +157,7 @@ function ShoppingListing() {
   useEffect(() => {
     if (filters !== null && sort !== null)
       dispatch(
-        fetchAllFilteredProducts({ filterParams: filters, sortParams: sort })
+        fetchAllFilteredProducts({ filterParams: filters, sortParams: sort }),
       );
   }, [dispatch, sort, filters]);
 
@@ -166,7 +167,7 @@ function ShoppingListing() {
 
   const activeFiltersCount = Object.values(filters).reduce(
     (acc, curr) => acc + curr.length,
-    0
+    0,
   );
 
   return (

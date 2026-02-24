@@ -12,7 +12,12 @@ const ProductSchema = new mongoose.Schema(
     totalStock: Number,
     averageReview: Number,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
+
+ProductSchema.index({ category: 1 });
+ProductSchema.index({ brand: 1 });
+ProductSchema.index({ price: 1 });
+ProductSchema.index({ title: "text" });
 
 module.exports = mongoose.model("Product", ProductSchema);

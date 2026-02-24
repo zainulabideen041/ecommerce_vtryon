@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-const baseURL = "https://ecomtryonbackend.vercel.app/api/shop/search";
-import axios from "axios";
+import { API_BASE_URL } from "@/config";
+const baseURL = `${API_BASE_URL}/shop/search`;
 
 const initialState = {
   isLoading: false,
@@ -13,7 +13,7 @@ export const getSearchResults = createAsyncThunk(
     const response = await axios.get(`${baseURL}/${keyword}`);
 
     return response.data;
-  }
+  },
 );
 
 const searchSlice = createSlice({

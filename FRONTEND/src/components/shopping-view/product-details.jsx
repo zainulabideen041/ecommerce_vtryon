@@ -1,4 +1,4 @@
-import { StarIcon, X, ShoppingCart, Sparkles } from "lucide-react";
+import { StarIcon, ShoppingCart, Sparkles, X } from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
@@ -18,49 +18,35 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const [reviewMsg, setReviewMsg] = useState("");
   const [rating, setRating] = useState(0);
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-  const { cartItems } = useSelector((state) => state.shopCart);
-  const { reviews } = useSelector((state) => state.shopReview);
+  const { user } = useSelector((s) => s.auth);
+  const { cartItems } = useSelector((s) => s.shopCart);
+  const { reviews } = useSelector((s) => s.shopReview);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  function handleRatingChange(getRating) {
-    setRating(getRating);
+  function handleRatingChange(r) {
+    setRating(r);
   }
 
-  function handleAddToCart(getCurrentProductId, getTotalStock) {
-    let getCartItems = cartItems.items || [];
-
-    if (getCartItems.length) {
-      const indexOfCurrentItem = getCartItems.findIndex(
-        (item) => item.productId === getCurrentProductId,
-      );
-      if (indexOfCurrentItem > -1) {
-        const getQuantity = getCartItems[indexOfCurrentItem].quantity;
-        if (getQuantity + 1 > getTotalStock) {
-          toast({
-            title: `Only ${getQuantity} quantity can be added for this item`,
-            variant: "destructive",
-          });
-
-          return;
-        }
-      }
+  function handleAddToCart(productId, totalStock) {
+    const existing = (cartItems.items || []).find(
+      (i) => i.productId === productId,
+    );
+    if (existing && existing.quantity + 1 > totalStock) {
+      toast({
+        title: `Only ${existing.quantity} can be added`,
+        variant: "destructive",
+      });
+      return;
     }
-    dispatch(
-      addToCart({
-        userId: user?.id,
-        productId: getCurrentProductId,
-        quantity: 1,
-      }),
-    ).then((data) => {
-      if (data?.payload?.success) {
-        dispatch(fetchCartItems(user?.id));
-        toast({
-          title: "Product is added to cart",
-        });
-      }
-    });
+    dispatch(addToCart({ userId: user?.id, productId, quantity: 1 })).then(
+      (d) => {
+        if (d?.payload?.success) {
+          dispatch(fetchCartItems(user?.id));
+          toast({ title: "Added to cart" });
+        }
+      },
+    );
   }
 
   function handleDialogClose() {
@@ -79,20 +65,14 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         reviewMessage: reviewMsg,
         reviewValue: rating,
       }),
-    ).then((data) => {
-      if (data.payload.success) {
+    ).then((d) => {
+      if (d.payload.success) {
         setRating(0);
         setReviewMsg("");
         dispatch(getReviews(productDetails?._id));
-        toast({
-          title: "Review added successfully!",
-        });
+        toast({ title: "Review submitted!" });
       }
     });
-  }
-
-  function handleNavigateTryOn(id) {
-    navigate(`/shop/tryon/${id}`);
   }
 
   useEffect(() => {
@@ -100,220 +80,229 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   }, [productDetails]);
 
   const averageReview =
-    reviews && reviews.length > 0
-      ? reviews.reduce((sum, reviewItem) => sum + reviewItem.reviewValue, 0) /
-        reviews.length
+    reviews?.length > 0
+      ? reviews.reduce((s, r) => s + r.reviewValue, 0) / reviews.length
+      : 0;
+
+  const discount =
+    productDetails?.salePrice > 0
+      ? Math.round(
+          ((productDetails.price - productDetails.salePrice) /
+            productDetails.price) *
+            100,
+        )
       : 0;
 
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
-      <DialogContent className="max-w-[95vw] md:max-w-[90vw] lg:max-w-[85vw] xl:max-w-[1200px] h-[90vh] p-0 overflow-hidden bg-gradient-to-br from-background to-muted/20">
+      <DialogContent className="max-w-[95vw] md:max-w-[88vw] lg:max-w-[1100px] h-[88vh] p-0 overflow-hidden border border-border/60 shadow-2xl rounded-2xl">
         <DialogTitle className="sr-only">
           {productDetails?.title || "Product Details"}
         </DialogTitle>
-        <div className="grid md:grid-cols-2 gap-0 h-full max-h-full overflow-hidden">
-          {/* Image Section - Left Side */}
-          <div className="relative bg-gradient-to-br from-muted/30 to-muted/10 flex items-center justify-center p-6 md:p-8 overflow-hidden">
-            <div className="relative w-full h-full flex items-center justify-center">
-              <img
-                src={productDetails?.image}
-                alt={productDetails?.title}
-                className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
-              />
-              {productDetails?.salePrice > 0 && (
-                <div className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
-                  SALE
-                </div>
-              )}
-              {productDetails?.totalStock === 0 && (
-                <div className="absolute top-4 left-4 bg-gray-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
-                  OUT OF STOCK
-                </div>
-              )}
-            </div>
+
+        <div className="grid md:grid-cols-2 h-full overflow-hidden">
+          {/* Left — Image */}
+          <div className="relative bg-muted/20 flex items-center justify-center overflow-hidden">
+            {/* Subtle gradient bg */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-gold/5" />
+
+            <img
+              src={productDetails?.image}
+              alt={productDetails?.title}
+              className="relative max-w-full max-h-full object-contain p-8 drop-shadow-xl"
+            />
+
+            {/* Badges */}
+            {discount > 0 && (
+              <div className="absolute top-4 left-4 min-w-[52px] h-[52px] rounded-full bg-gradient-primary flex flex-col items-center justify-center shadow-lg">
+                <span className="text-white text-[11px] font-bold leading-none">
+                  {discount}%
+                </span>
+                <span className="text-white/80 text-[9px]">OFF</span>
+              </div>
+            )}
+            {productDetails?.totalStock === 0 && (
+              <div className="absolute top-4 left-4 bg-foreground/80 text-background text-[11px] font-semibold px-3 py-1 rounded-sm tracking-wide">
+                SOLD OUT
+              </div>
+            )}
           </div>
 
-          {/* Details Section - Right Side */}
-          <div className="flex flex-col h-full overflow-y-auto p-6 md:p-8 lg:p-10 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-            {/* Header */}
-            <div className="mb-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2 leading-tight">
-                    {productDetails?.title}
-                  </h1>
-                  <div className="flex items-center gap-3 mt-3">
-                    <div className="flex items-center gap-1">
-                      <StarRatingComponent rating={averageReview} />
-                    </div>
-                    <span className="text-sm text-muted-foreground font-medium">
-                      {averageReview.toFixed(1)} ({reviews?.length || 0}{" "}
-                      reviews)
-                    </span>
-                  </div>
-                </div>
-              </div>
+          {/* Right — Details */}
+          <div className="flex flex-col h-full overflow-y-auto">
+            {/* Header sticky */}
+            <div className="px-7 pt-6 pb-4 border-b border-border/50">
+              <h1 className="font-display text-3xl md:text-4xl font-semibold leading-tight text-foreground mb-2">
+                {productDetails?.title}
+              </h1>
 
-              <p className="text-muted-foreground text-base leading-relaxed">
-                {productDetails?.description}
-              </p>
+              {/* Rating row */}
+              <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-0.5">
+                  <StarRatingComponent rating={averageReview} />
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {averageReview.toFixed(1)} · {reviews?.length || 0} reviews
+                </span>
+              </div>
             </div>
 
-            {/* Price Section */}
-            <div className="mb-6 p-4 bg-muted/30 rounded-xl">
-              <div className="flex items-center gap-4">
+            <div className="px-7 py-4 space-y-5 flex-1">
+              {/* Description */}
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {productDetails?.description}
+              </p>
+
+              {/* Price panel */}
+              <div className="flex items-center gap-6 px-5 py-4 rounded-xl bg-muted/30 border border-border/50">
                 {productDetails?.salePrice > 0 ? (
                   <>
-                    <div className="flex flex-col">
-                      <span className="text-sm text-muted-foreground">
-                        Original Price
+                    <div>
+                      <span className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                        Was
                       </span>
-                      <p className="text-xl font-semibold text-muted-foreground line-through">
-                        ${productDetails?.price}
+                      <p className="text-lg text-muted-foreground line-through font-display">
+                        ${productDetails.price}
                       </p>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-sm text-green-600 font-medium">
-                        Sale Price
+                    <div>
+                      <span className="text-[11px] text-gold-dark uppercase tracking-wide font-semibold">
+                        Now
                       </span>
-                      <p className="text-3xl font-bold text-green-600">
-                        ${productDetails?.salePrice}
+                      <p className="text-3xl font-bold text-primary font-display">
+                        ${productDetails.salePrice}
                       </p>
                     </div>
-                    <div className="ml-auto bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
-                      Save $
-                      {(
-                        productDetails?.price - productDetails?.salePrice
-                      ).toFixed(2)}
+                    <div className="ml-auto px-3 py-1.5 bg-gold/15 border border-gold/30 rounded-lg text-center">
+                      <span className="text-gold-dark text-xs font-bold block">
+                        Save
+                      </span>
+                      <span className="text-gold-dark font-bold text-sm">
+                        $
+                        {(
+                          productDetails.price - productDetails.salePrice
+                        ).toFixed(2)}
+                      </span>
                     </div>
                   </>
                 ) : (
-                  <div className="flex flex-col">
-                    <span className="text-sm text-muted-foreground">Price</span>
-                    <p className="text-3xl font-bold text-primary">
+                  <div>
+                    <span className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                      Price
+                    </span>
+                    <p className="text-3xl font-bold text-primary font-display">
                       ${productDetails?.price}
                     </p>
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="mb-6 space-y-3">
-              {productDetails?.totalStock === 0 ? (
+              {/* Actions */}
+              <div className="space-y-2.5">
+                {productDetails?.totalStock === 0 ? (
+                  <Button className="w-full h-11" disabled>
+                    Out of Stock
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full h-11 bg-gradient-primary hover:opacity-90 shadow-md transition-all gap-2"
+                    onClick={() =>
+                      handleAddToCart(
+                        productDetails?._id,
+                        productDetails?.totalStock,
+                      )
+                    }
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                    Add to Cart
+                  </Button>
+                )}
                 <Button
-                  className="w-full h-12 text-base font-semibold opacity-60 cursor-not-allowed"
-                  disabled
+                  className="w-full h-11 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:opacity-90 text-white shadow-md transition-all gap-2"
+                  onClick={() => navigate(`/shop/tryon/${productDetails?._id}`)}
                 >
-                  Out of Stock
+                  ✦ Virtual Try-On
                 </Button>
-              ) : (
                 <Button
-                  className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl"
+                  className="w-full h-11 bg-gradient-to-r from-violet-700 to-rose-600 hover:opacity-90 text-white shadow-md transition-all gap-2"
                   onClick={() =>
-                    handleAddToCart(
-                      productDetails?._id,
-                      productDetails?.totalStock,
-                    )
+                    navigate(`/shop/tryon-youcam/${productDetails?._id}`)
                   }
                 >
-                  <ShoppingCart className="mr-2 h-5 w-5" />
-                  Add to Cart
+                  <Sparkles className="h-4 w-4" />
+                  Virtual Try-On PRO (90% Accurate)
                 </Button>
-              )}
-              <Button
-                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-all shadow-lg hover:shadow-xl"
-                onClick={() => handleNavigateTryOn(productDetails?._id)}
-              >
-                Try On Virtually (75% Accurate)
-              </Button>
-              <Button
-                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-all shadow-lg hover:shadow-xl"
-                onClick={() =>
-                  navigate(`/shop/tryon-youcam/${productDetails?._id}`)
-                }
-              >
-                <Sparkles className="mr-2 h-5 w-5" />
-                Try On Virtually PRO (90% Accurate)
-              </Button>
-            </div>
-
-            <Separator className="my-6" />
-
-            {/* Reviews Section */}
-            <div className="flex-1 overflow-y-auto">
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <StarIcon className="h-6 w-6 fill-yellow-400 text-yellow-400" />
-                Customer Reviews
-              </h2>
-
-              {/* Reviews List */}
-              <div className="space-y-4 mb-6 max-h-[200px] overflow-y-auto pr-2">
-                {reviews && reviews.length > 0 ? (
-                  reviews.map((reviewItem, index) => (
-                    <div
-                      key={index}
-                      className="flex gap-3 p-4 bg-muted/20 rounded-lg hover:bg-muted/30 transition-colors"
-                    >
-                      <Avatar className="w-10 h-10 border-2 border-primary/20">
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                          {reviewItem?.userName?.[0]?.toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-semibold text-sm">
-                            {reviewItem?.userName}
-                          </h3>
-                          <div className="flex items-center gap-1">
-                            <StarRatingComponent
-                              rating={reviewItem?.reviewValue}
-                            />
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {reviewItem.reviewMessage}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p className="text-sm">
-                      No reviews yet. Be the first to review!
-                    </p>
-                  </div>
-                )}
               </div>
 
-              {/* Add Review Form */}
-              <div className="mt-6 p-4 bg-muted/20 rounded-xl space-y-3">
-                <Label className="text-base font-semibold">
-                  Write a Review
-                </Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    Your Rating:
-                  </span>
-                  <StarRatingComponent
-                    rating={rating}
-                    handleRatingChange={handleRatingChange}
-                  />
+              <Separator className="opacity-50" />
+
+              {/* Reviews */}
+              <div>
+                <h2 className="font-display text-xl font-semibold mb-3 flex items-center gap-2">
+                  <StarIcon className="h-5 w-5 fill-gold text-gold" />
+                  Customer Reviews
+                </h2>
+
+                <div className="space-y-3 max-h-[180px] overflow-y-auto pr-1 mb-4">
+                  {reviews?.length > 0 ? (
+                    reviews.map((r, i) => (
+                      <div
+                        key={i}
+                        className="flex gap-3 p-3 bg-muted/20 rounded-lg"
+                      >
+                        <Avatar className="w-8 h-8 shrink-0">
+                          <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                            {r.userName?.[0]?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm font-semibold truncate">
+                              {r.userName}
+                            </span>
+                            <StarRatingComponent rating={r.reviewValue} />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                            {r.reviewMessage}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No reviews yet — be the first!
+                    </p>
+                  )}
                 </div>
-                <Input
-                  name="reviewMsg"
-                  value={reviewMsg}
-                  onChange={(event) => setReviewMsg(event.target.value)}
-                  placeholder="Share your thoughts about this product..."
-                  className="h-12"
-                />
-                <Button
-                  onClick={handleAddReview}
-                  disabled={reviewMsg.trim() === "" || rating === 0}
-                  className="w-full h-10"
-                >
-                  Submit Review
-                </Button>
+
+                {/* Add review */}
+                <div className="p-4 bg-muted/20 rounded-xl space-y-3 border border-border/40">
+                  <Label className="text-sm font-semibold">
+                    Write a Review
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      Rating:
+                    </span>
+                    <StarRatingComponent
+                      rating={rating}
+                      handleRatingChange={handleRatingChange}
+                    />
+                  </div>
+                  <Input
+                    value={reviewMsg}
+                    onChange={(e) => setReviewMsg(e.target.value)}
+                    placeholder="Share your experience…"
+                    className="h-10 text-sm"
+                  />
+                  <Button
+                    onClick={handleAddReview}
+                    disabled={!reviewMsg.trim() || rating === 0}
+                    className="w-full h-9 text-sm"
+                  >
+                    Submit Review
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

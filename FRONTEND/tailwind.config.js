@@ -7,8 +7,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Outfit", "Inter", "system-ui", "sans-serif"],
+        sans: ["DM Sans", "system-ui", "sans-serif"],
+        display: ["Cormorant Garamond", "Georgia", "serif"],
+        cinzel: ["Cinzel", "serif"],
+        serif: ["Cormorant Garamond", "Georgia", "serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -62,6 +64,11 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          light: "hsl(var(--gold-light))",
+          dark: "hsl(var(--gold-dark))",
+        },
         chart: {
           1: "hsl(var(--chart-1))",
           2: "hsl(var(--chart-2))",
@@ -73,6 +80,8 @@ export default {
       backgroundImage: {
         "gradient-primary": "var(--gradient-primary)",
         "gradient-secondary": "var(--gradient-secondary)",
+        "gradient-gold": "var(--gradient-gold)",
+        "gradient-imperial": "var(--gradient-imperial)",
         "gradient-mesh": "var(--gradient-mesh)",
       },
       boxShadow: {

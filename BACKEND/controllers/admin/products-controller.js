@@ -1,4 +1,7 @@
-const { UploadImage } = require("../../helpers/cloudinary");
+const {
+  UploadImage,
+  deleteImageFromCloudinary,
+} = require("../../helpers/cloudinary");
 const Product = require("../../models/Product");
 const mongoose = require("mongoose");
 
@@ -28,6 +31,39 @@ const handleImageUpload = async (req, res) => {
       success: false,
       message: "Error occured",
     });
+  }
+};
+
+const handleImageDelete = async (req, res) => {
+  try {
+    const { imageUrl } = req.body;
+    if (!imageUrl) {
+      return res
+        .status(400)
+        .json({ success: false, message: "imageUrl is required" });
+    }
+    const result = await deleteImageFromCloudinary(imageUrl);
+    res.json({ success: true, result });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: "Error deleting image" });
+  }
+};
+
+// Beacon endpoint — sendBeacon always sends POST, so we need a separate POST route
+const handleImageDeleteBeacon = async (req, res) => {
+  try {
+    const { imageUrl } = req.body;
+    if (!imageUrl) {
+      return res
+        .status(400)
+        .json({ success: false, message: "imageUrl is required" });
+    }
+    const result = await deleteImageFromCloudinary(imageUrl);
+    res.json({ success: true, result });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: "Error deleting image" });
   }
 };
 
@@ -197,6 +233,8 @@ const deleteProduct = async (req, res) => {
 
 module.exports = {
   handleImageUpload,
+  handleImageDelete,
+  handleImageDeleteBeacon,
   addProduct,
   fetchAllProducts,
   editProduct,

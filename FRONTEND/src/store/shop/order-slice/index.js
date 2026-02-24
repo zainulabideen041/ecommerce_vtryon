@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const baseURL = "https://ecomtryonbackend.vercel.app/api/shop/order";
+import { API_BASE_URL } from "@/config";
+const baseURL = `${API_BASE_URL}/shop/order`;
 
 const initialState = {
   // approvalURL: null,
@@ -16,7 +17,7 @@ export const createNewOrder = createAsyncThunk(
     const response = await axios.post(`${baseURL}/create`, orderData);
 
     return response.data;
-  }
+  },
 );
 
 export const capturePayment = createAsyncThunk(
@@ -29,7 +30,7 @@ export const capturePayment = createAsyncThunk(
     });
 
     return response.data;
-  }
+  },
 );
 
 export const getAllOrdersByUserId = createAsyncThunk(
@@ -38,7 +39,7 @@ export const getAllOrdersByUserId = createAsyncThunk(
     const response = await axios.get(`${baseURL}/list/${userId}`);
 
     return response.data;
-  }
+  },
 );
 
 export const getOrderDetails = createAsyncThunk(
@@ -47,7 +48,7 @@ export const getOrderDetails = createAsyncThunk(
     const response = await axios.get(`${baseURL}/details/${id}`);
 
     return response.data;
-  }
+  },
 );
 
 const shoppingOrderSlice = createSlice({
@@ -69,7 +70,7 @@ const shoppingOrderSlice = createSlice({
         state.orderId = action.payload.orderId;
         sessionStorage.setItem(
           "currentOrderId",
-          JSON.stringify(action.payload.orderId)
+          JSON.stringify(action.payload.orderId),
         );
       })
       .addCase(createNewOrder.rejected, (state) => {

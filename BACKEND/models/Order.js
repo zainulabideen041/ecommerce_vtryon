@@ -30,4 +30,8 @@ const OrderSchema = new mongoose.Schema({
   payerId: String,
 });
 
+OrderSchema.index({ userId: 1 });
+OrderSchema.index({ orderStatus: 1 });
+OrderSchema.index({ orderDate: -1 });
+
 module.exports = mongoose.model("Order", OrderSchema);
