@@ -223,4 +223,4 @@ export const addressFormControls = [
   },
 ];
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+export const API_BASE_URL = "https://ecomtryonbackend.vercel.app/api" || import.meta.env.VITE_API_URL;
