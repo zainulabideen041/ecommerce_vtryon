@@ -14,15 +14,17 @@ choice in this browser and reloads the catalog with clean product/category state
 Login, the real bag, admin records and payment APIs are preserved. Dummy catalog
 items remain preview-only and cannot be added to live checkout.
 
-- **Dummy:** uses `womens-fashion-catalog-open-data` through the read-only Vite
-  development API, or a hosted API configured below.
+- **Dummy:** uses the deployed read-only R2 catalog API at
+  `https://luxar-demo-api.luxar-demo-api.workers.dev/api`. The original dataset
+  folder is not required to run the storefront.
 - **Live:** uses the existing store product and search endpoints.
-- Development defaults to Dummy; production defaults to Live. Without a hosted
-  dummy API, the production Dummy option is disabled.
+- Development defaults to Dummy; production defaults to Live. The navbar can
+  select either catalog in both environments.
 - The dataset folder is ignored by Git and is never bundled into the app.
 
-To replace the local files with a hosted read-only catalog API, configure the
-frontend build environment and rebuild:
+The hosted catalog URL is a public default in `src/lib/catalog-mode.js`.
+To point to another compatible API, configure the frontend build environment
+and restart/rebuild:
 
 ```dotenv
 VITE_DUMMY_CATALOG_API_URL=https://catalog.example.com/api
@@ -55,7 +57,9 @@ Suggested hosting: object storage such as Cloudflare R2 for the versioned
 snapshot/thumbnails, plus a small read-only catalog API with a compact index.
 Preprocess the original JSON when publishing a snapshot; avoid reparsing the full
 JSON on every request. Full-size product images already reference the source CDN.
-Hosting has not been provisioned or deployed by this change.
+The R2 bucket and Worker are deployed. For offline development with the original
+dataset present, set `VITE_DUMMY_CATALOG_API_URL=local`. This uses the read-only
+Vite development API instead of the hosted snapshot.
 
 The Cloudflare Worker and prepared upload workflow are documented in
 [`../CATALOG_API/README.md`](../CATALOG_API/README.md).

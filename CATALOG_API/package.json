@@ -1,0 +1,17 @@
+{
+  "name": "luxar-demo-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "export": "node scripts/export.mjs",
+    "upload": "node scripts/upload.mjs",
+    "test": "node --test test/*.test.mjs",
+    "dev": "wrangler dev",
+    "check": "wrangler deploy --dry-run",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.160.0"
+  }
+}

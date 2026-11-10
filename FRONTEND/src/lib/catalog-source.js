@@ -2,13 +2,14 @@ import {
   CATALOG_MODE_KEY,
   resolveCatalogMode,
   catalogSwitchDestination,
+  resolveDummyCatalogApiUrl,
 } from "./catalog-mode";
 
 // Only this public, read-only API URL goes into the frontend. Hosting credentials
 // belong on the server. The local dataset is never bundled into the app.
-const hostedDummyApi = (import.meta.env.VITE_DUMMY_CATALOG_API_URL || "")
-  .trim()
-  .replace(/\/+$/, "");
+const hostedDummyApi = resolveDummyCatalogApiUrl(
+  import.meta.env.VITE_DUMMY_CATALOG_API_URL,
+);
 export const DUMMY_CATALOG_AVAILABLE = import.meta.env.DEV || !!hostedDummyApi;
 let storedMode;
 try {

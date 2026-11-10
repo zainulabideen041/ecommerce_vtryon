@@ -3,7 +3,21 @@ import assert from "node:assert/strict";
 import {
   resolveCatalogMode,
   catalogSwitchDestination,
+  resolveDummyCatalogApiUrl,
+  DEFAULT_DUMMY_CATALOG_API_URL,
 } from "../src/lib/catalog-mode.js";
+
+test("dummy mode uses the hosted API without a local dataset or environment file", () => {
+  assert.equal(
+    resolveDummyCatalogApiUrl(undefined),
+    DEFAULT_DUMMY_CATALOG_API_URL,
+  );
+  assert.equal(
+    resolveDummyCatalogApiUrl(" https://catalog.example.test/api/ "),
+    "https://catalog.example.test/api",
+  );
+  assert.equal(resolveDummyCatalogApiUrl("local"), "");
+});
 
 test("the switch remembers a supported catalog choice", () => {
   assert.equal(

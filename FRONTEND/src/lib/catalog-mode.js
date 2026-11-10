@@ -1,4 +1,15 @@
 export const CATALOG_MODE_KEY = "luxar.catalog-mode";
+export const DEFAULT_DUMMY_CATALOG_API_URL =
+  "https://luxar-demo-api.luxar-demo-api.workers.dev/api";
+
+export function resolveDummyCatalogApiUrl(configured) {
+  const value = String(configured || "").trim();
+  // An explicit local override is useful for offline development. Normal
+  // checkouts use the hosted snapshot, so the dataset is not needed in Git.
+  return value === "local"
+    ? ""
+    : (value || DEFAULT_DUMMY_CATALOG_API_URL).replace(/\/+$/, "");
+}
 
 export function resolveCatalogMode({
   requested,

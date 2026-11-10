@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "luxar-demo-api",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-11-10",
+  "workers_dev": true,
+  "r2_buckets": [
+    {
+      "binding": "CATALOG_BUCKET",
+      "bucket_name": "luxar-demo-catalog",
+    },
+  ],
+  "vars": {
+    "ALLOWED_ORIGINS": "http://localhost:5173,http://127.0.0.1:5173",
+    "CACHE_TTL_SECONDS": "300",
+  },
+}

@@ -99,10 +99,13 @@ yarn-error.log*
 
 
 
-CATALOG_API/
 womens-fashion-catalog-open-data/
-womens-fashion-catalog-open-data/# Generated R2 catalog exports and Cloudflare local state
+# Generated R2 catalog exports and Cloudflare local state
 .catalog-export/
 **/.wrangler/
 **/.dev.vars
 **/.dev.vars.*
+vite.config.*.timestamp-*.mjs
+
+# Keep the Worker dependency versions reproducible.
+!CATALOG_API/package-lock.json
