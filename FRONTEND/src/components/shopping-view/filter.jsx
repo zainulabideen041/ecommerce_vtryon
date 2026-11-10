@@ -1,64 +1,56 @@
 import { filterOptions } from "@/config";
-import { Fragment } from "react";
-import { Label } from "../ui/label";
-import { Checkbox } from "../ui/checkbox";
-import { Separator } from "../ui/separator";
-import { Badge } from "../ui/badge";
-
-function ProductFilter({ filters, handleFilter }) {
-  const getActiveFiltersCount = (keyItem) => {
-    return filters && filters[keyItem] ? filters[keyItem].length : 0;
-  };
-
+import { LOCAL_CATALOG } from "@/lib/catalog-source";
+import { useCatalogMetadata } from "@/hooks/use-catalog-metadata";
+export default function ProductFilter({
+  filters,
+  handleFilter,
+  onCategoryChange,
+}) {
+  const { metadata } = useCatalogMetadata();
+  const optionsBySection = LOCAL_CATALOG
+    ? { category: metadata?.groups || [], brand: metadata?.brands || [] }
+    : filterOptions;
   return (
-    <div className="bg-card rounded-2xl border-2 shadow-sm sticky top-20">
-      <div className="p-6 border-b">
-        <h2 className="text-xl font-display font-bold">Filters</h2>
-        <p className="text-sm text-muted-foreground mt-1">Refine your search</p>
-      </div>
-      <div className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-        {Object.keys(filterOptions).map((keyItem, index) => (
-          <Fragment key={keyItem}>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold capitalize">
-                  {keyItem}
-                </h3>
-                {getActiveFiltersCount(keyItem) > 0 && (
-                  <Badge variant="secondary" className="text-xs">
-                    {getActiveFiltersCount(keyItem)}
-                  </Badge>
-                )}
-              </div>
-              <div className="grid gap-3">
-                {filterOptions[keyItem].map((option) => (
-                  <Label
-                    key={option.id}
-                    className="flex items-center gap-3 cursor-pointer group"
-                  >
-                    <Checkbox
-                      checked={
-                        filters &&
-                        Object.keys(filters).length > 0 &&
-                        filters[keyItem] &&
-                        filters[keyItem].indexOf(option.id) > -1
-                      }
-                      onCheckedChange={() => handleFilter(keyItem, option.id)}
-                      className="transition-all"
-                    />
-                    <span className="text-sm font-medium group-hover:text-primary transition-colors">
-                      {option.label}
-                    </span>
-                  </Label>
-                ))}
-              </div>
-            </div>
-            {index < Object.keys(filterOptions).length - 1 && <Separator />}
-          </Fragment>
-        ))}
-      </div>
+    <div className="filter-panel">
+      <h2>Refine the edit</h2>
+      {Object.entries(optionsBySection).map(([section, options]) => (
+        <fieldset key={section}>
+          <legend>{section}</legend>
+          {options.map((option) => (
+            <label key={option.id}>
+              <input
+                type="checkbox"
+                checked={!!filters[section]?.includes(option.id)}
+                onChange={() => handleFilter(section, option.id)}
+              />
+              {option.label}
+              {option.count != null && (
+                <span className="filter-option-count">{option.count}</span>
+              )}
+            </label>
+          ))}
+        </fieldset>
+      ))}
+      {LOCAL_CATALOG && metadata && (
+        <label className="filter-taxonomy-select">
+          Specific category
+          <select
+            value={
+              filters.category.find((id) =>
+                metadata.categories.some((category) => category.id === id),
+              ) || ""
+            }
+            onChange={(event) => onCategoryChange?.(event.target.value)}
+          >
+            <option value="">All categories</option>
+            {metadata.categories.map((category) => (
+              <option value={category.id} key={category.id}>
+                {category.label} ({category.count})
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
     </div>
   );
 }
-
-export default ProductFilter;

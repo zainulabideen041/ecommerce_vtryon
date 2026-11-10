@@ -1,114 +1,330 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { ShoppingBag, Users, TrendingUp, Package } from "lucide-react";
+import {
+  ArrowUpRight,
+  Package,
+  ShoppingBag,
+  Users,
+  ArrowRight,
+  Plus,
+} from "lucide-react";
 import { fetchAllProducts } from "@/store/admin/products-slice";
 import { getAllOrdersForAdmin } from "@/store/admin/order-slice";
+import {
+  AdminState,
+  AdminStatus,
+  AdminLoading,
+} from "@/components/admin-view/studio-ui";
+import StudioPhoto from "@/components/admin-view/studio-photo";
+import {
+  orderMoney,
+  orderDate,
+  orderReference,
+} from "@/lib/order-presentation";
+import { useAdminReveal } from "@/hooks/use-admin-reveal";
 
-function AdminDashboard() {
+export default function AdminDashboard() {
   const dispatch = useDispatch();
   const { productList } = useSelector((state) => state.adminProducts);
   const { orderList } = useSelector((state) => state.adminOrder);
-
+  const [loading, setLoading] = useState(true);
+  const [errors, setErrors] = useState({ products: false, orders: false });
+  const [refresh, setRefresh] = useState(0);
+  const root = useRef(null);
+  useAdminReveal(root, `${loading}-${refresh}`);
   useEffect(() => {
-    dispatch(fetchAllProducts());
-    dispatch(getAllOrdersForAdmin());
-  }, [dispatch]);
-
-  // Calculate real stats
-  const totalProducts = productList?.length || 0;
-  const totalOrders = orderList?.length || 0;
-
-  // Calculate revenue from confirmed/delivered orders
-  const revenue =
-    orderList?.reduce((sum, order) => {
-      if (
-        order.orderStatus === "confirmed" ||
-        order.orderStatus === "delivered"
-      ) {
-        return sum + (order.totalAmount || 0);
-      }
-      return sum;
-    }, 0) || 0;
-
-  // Get unique users from orders
-  const uniqueUsers =
-    new Set(orderList?.map((order) => order.userId)).size || 0;
-
+    let active = true;
+    setLoading(true);
+    Promise.all([
+      dispatch(fetchAllProducts()),
+      dispatch(getAllOrdersForAdmin()),
+    ]).then(([products, orders]) => {
+      if (!active) return;
+      setErrors({
+        products: !products.payload?.success,
+        orders: !orders.payload?.success,
+      });
+      setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [dispatch, refresh]);
+  const products = productList || [];
+  const orders = orderList || [];
+  const revenue = orders.reduce(
+    (sum, order) =>
+      ["confirmed", "delivered"].includes(order.orderStatus)
+        ? sum + (Number(order.totalAmount) || 0)
+        : sum,
+    0,
+  );
+  const customers = new Set(orders.map((order) => order.userId).filter(Boolean))
+    .size;
+  const recent = [...orders]
+    .sort(
+      (a, b) => (Date.parse(b.orderDate) || 0) - (Date.parse(a.orderDate) || 0),
+    )
+    .slice(0, 5);
+  const stock = products
+    .filter(
+      (product) =>
+        Number.isFinite(product.totalStock) && product.totalStock < 5,
+    )
+    .sort((a, b) => a.totalStock - b.totalStock)
+    .slice(0, 4);
+  const categories = Object.entries(
+    products.reduce((counts, product) => {
+      const category =
+        product.categoryLabel || product.category || "Uncategorized";
+      counts[category] = (counts[category] || 0) + 1;
+      return counts;
+    }, {}),
+  ).sort((a, b) => b[1] - a[1]);
   const stats = [
     {
-      title: "Total Products",
-      value: totalProducts.toString(),
+      label: "Products",
+      value: errors.products ? "\u2014" : products.length,
+      note: "Pieces in your store",
       icon: Package,
-      gradient: "from-purple-500 to-blue-500",
-      bgGradient: "from-purple-50 to-blue-50",
     },
     {
-      title: "Total Orders",
-      value: totalOrders.toString(),
+      label: "Orders",
+      value: errors.orders ? "\u2014" : orders.length,
+      note: "Across all order statuses",
       icon: ShoppingBag,
-      gradient: "from-blue-500 to-cyan-500",
-      bgGradient: "from-blue-50 to-cyan-50",
     },
     {
-      title: "Total Users",
-      value: uniqueUsers.toString(),
+      label: "Ordering customers",
+      value: errors.orders ? "\u2014" : customers,
+      note: "Unique customers in your orders",
       icon: Users,
-      gradient: "from-green-500 to-emerald-500",
-      bgGradient: "from-green-50 to-emerald-50",
     },
     {
-      title: "Revenue",
-      value: `$${revenue.toFixed(2)}`,
-      icon: TrendingUp,
-      gradient: "from-orange-500 to-red-500",
-      bgGradient: "from-orange-50 to-red-50",
+      label: "Order revenue",
+      value: errors.orders ? "\u2014" : orderMoney(revenue),
+      note: "Confirmed & delivered orders",
+      icon: ArrowUpRight,
     },
   ];
-
   return (
-    <div className="space-y-8 fade-in">
-      {/* Page Header */}
-      <div className="space-y-2">
-        <h1 className="text-4xl font-display font-bold bg-gradient-primary bg-clip-text text-transparent">
-          Dashboard
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          Welcome to your admin dashboard. Manage your store efficiently.
-        </p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <Card
-            key={index}
-            className={`border-2 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br ${stat.bgGradient} overflow-hidden relative group`}
-          >
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {stat.title}
-                  </p>
-                  <p className="text-3xl font-bold">{stat.value}</p>
-                </div>
-                <div
-                  className={`w-14 h-14 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}
-                >
-                  <stat.icon className="w-7 h-7 text-white" />
-                </div>
+    <div className="admin-overview" ref={root}>
+      <section className="admin-overview-hero" data-admin-reveal>
+        <div>
+          <p className="admin-eyebrow">01 / THE STUDIO OVERVIEW</p>
+          <h1>
+            A good day
+            <br />
+            for <em>good style.</em>
+          </h1>
+          <p>
+            A clear view of your collection, your orders and the details that
+            keep your store moving.
+          </p>
+          <Link to="/admin/products">
+            Curate your collection <ArrowUpRight size={18} />
+          </Link>
+        </div>
+        <div className="admin-overview-art" aria-hidden="true">
+          <span>L.</span>
+          <svg viewBox="0 0 400 400" fill="none">
+            <ellipse
+              cx="200"
+              cy="200"
+              rx="180"
+              ry="95"
+              transform="rotate(-30 200 200)"
+            />
+            <ellipse
+              cx="200"
+              cy="200"
+              rx="180"
+              ry="95"
+              transform="rotate(40 200 200)"
+            />
+            <circle cx="200" cy="200" r="140" />
+          </svg>
+          <small>THE LUXAR POINT OF VIEW</small>
+        </div>
+      </section>
+      {loading ? (
+        <AdminLoading label="Loading your store overview" count={4} />
+      ) : (
+        <div className="admin-stat-grid">
+          {stats.map((stat, index) => (
+            <article
+              key={stat.label}
+              className={`admin-stat stat-${index + 1}`}
+              data-admin-reveal
+            >
+              <div>
+                <span>{stat.label}</span>
+                <stat.icon size={19} strokeWidth={1.25} />
               </div>
-            </CardContent>
-            {/* Decorative element */}
-            <div
-              className={`absolute -bottom-2 -right-2 w-24 h-24 bg-gradient-to-br ${stat.gradient} opacity-10 rounded-full blur-2xl`}
-            ></div>
-          </Card>
-        ))}
+              <strong>{stat.value}</strong>
+              <p>{stat.note}</p>
+            </article>
+          ))}
+        </div>
+      )}
+      {!loading && (errors.products || errors.orders) && (
+        <div className="admin-inline-error" role="alert">
+          <span>
+            Some store data couldn't be loaded. Unavailable totals are marked
+            with a dash.
+          </span>
+          <button onClick={() => setRefresh((value) => value + 1)}>
+            Retry overview <ArrowRight size={15} />
+          </button>
+        </div>
+      )}
+      <div className="admin-overview-panels">
+        <section className="admin-panel" data-admin-reveal>
+          <div className="admin-panel-heading">
+            <div>
+              <p className="admin-eyebrow">THE CUSTOMER EDIT</p>
+              <h2>Latest orders.</h2>
+            </div>
+            <Link to="/admin/orders" aria-label="View all orders">
+              <ArrowUpRight size={21} />
+            </Link>
+          </div>
+          {loading ? (
+            <AdminLoading count={1} />
+          ) : errors.orders ? (
+            <AdminState
+              error
+              title="Orders unavailable"
+              description="Refresh the overview to reconnect."
+              onRetry={() => setRefresh((value) => value + 1)}
+            />
+          ) : recent.length ? (
+            <div className="admin-recent-orders">
+              {recent.map((order) => (
+                <Link to={`/admin/orders?order=${order._id}`} key={order._id}>
+                  <span className="admin-recent-order-icon">
+                    <ShoppingBag size={18} strokeWidth={1.25} />
+                  </span>
+                  <span>
+                    <strong>Order {orderReference(order._id)}</strong>
+                    <small>{orderDate(order.orderDate)}</small>
+                  </span>
+                  <AdminStatus value={order.orderStatus} />
+                  <strong>{orderMoney(order.totalAmount)}</strong>
+                  <ArrowUpRight size={15} />
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <AdminState
+              title="The first chapter awaits."
+              description="Customer orders will appear here after a purchase."
+            />
+          )}
+        </section>
+        <section className="admin-panel admin-category-panel" data-admin-reveal>
+          <div className="admin-panel-heading">
+            <div>
+              <p className="admin-eyebrow">YOUR COLLECTION, AT A GLANCE</p>
+              <h2>The current mix.</h2>
+            </div>
+            <Package size={23} strokeWidth={1} />
+          </div>
+          {loading ? (
+            <AdminLoading count={1} />
+          ) : errors.products ? (
+            <AdminState
+              error
+              title="Inventory unavailable"
+              description="Refresh to view your collection mix."
+            />
+          ) : categories.length ? (
+            <div className="admin-category-bars">
+              {categories.map(([category, count], index) => (
+                <div key={category}>
+                  <div>
+                    <span>{category}</span>
+                    <strong>
+                      {count} <small>{count === 1 ? "piece" : "pieces"}</small>
+                    </strong>
+                  </div>
+                  <span>
+                    <span
+                      style={{
+                        width: `${(count / products.length) * 100}%`,
+                        "--bar-color": [
+                          "#801831",
+                          "#b36e7f",
+                          "#889579",
+                          "#d7ae96",
+                        ][index % 4],
+                      }}
+                    />
+                  </span>
+                </div>
+              ))}
+              <Link to="/admin/products">
+                See every piece <ArrowRight size={16} />
+              </Link>
+            </div>
+          ) : (
+            <AdminState
+              title="Room for your collection."
+              description="Add your first product to begin."
+            />
+          )}
+        </section>
       </div>
+      <section className="admin-stock-panel admin-panel" data-admin-reveal>
+        <div className="admin-panel-heading">
+          <div>
+            <p className="admin-eyebrow">A LITTLE ATTENTION</p>
+            <h2>Keep the favourites close.</h2>
+          </div>
+          <Link to="/admin/products?stock=low">
+            Review inventory <ArrowUpRight size={17} />
+          </Link>
+        </div>
+        {loading ? (
+          <AdminLoading count={2} />
+        ) : errors.products ? (
+          <p className="admin-muted">Inventory could not be checked.</p>
+        ) : stock.length ? (
+          <div className="admin-stock-grid">
+            {stock.map((product) => (
+              <Link
+                to={`/admin/products?edit=${product._id}`}
+                key={product._id}
+              >
+                <StudioPhoto
+                  src={product.image}
+                  alt={product.title}
+                  sizes="80px"
+                />
+                <span>
+                  <strong>{product.title}</strong>
+                  <small
+                    className={product.totalStock === 0 ? "stock-out" : ""}
+                  >
+                    {product.totalStock === 0
+                      ? "Out of stock"
+                      : `${product.totalStock} left in stock`}
+                  </small>
+                </span>
+                <ArrowUpRight size={15} />
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="admin-stock-clear">
+            <span>No low-stock pieces to review.</span>
+            <Link to="/admin/products">
+              Manage your collection <Plus size={15} />
+            </Link>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
-
-export default AdminDashboard;

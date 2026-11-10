@@ -1,26 +1,33 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_BASE_URL } from "@/config";
+import { collectAdminOrderPages } from "@/lib/admin-order-pages";
 const baseURL = `${API_BASE_URL}/admin/orders`;
 
 const initialState = {
   orderList: [],
   orderDetails: null,
+  activeDetailRequest: null,
+  isLoading: false,
 };
 
 export const getAllOrdersForAdmin = createAsyncThunk(
   "/order/getAllOrdersForAdmin",
-  async () => {
-    const response = await axios.get(`${baseURL}/get`);
-
-    return response.data;
+  async (_, { signal }) => {
+    return collectAdminOrderPages(async (page) => {
+      const response = await axios.get(`${baseURL}/get`, {
+        params: { page, limit: 100 },
+        signal,
+      });
+      return response.data;
+    });
   },
 );
 
 export const getOrderDetailsForAdmin = createAsyncThunk(
   "/order/getOrderDetailsForAdmin",
-  async (id) => {
-    const response = await axios.get(`${baseURL}/details/${id}`);
+  async (id, { signal }) => {
+    const response = await axios.get(`${baseURL}/details/${id}`, { signal });
 
     return response.data;
   },
@@ -51,9 +58,9 @@ const adminOrderSlice = createSlice({
   initialState,
   reducers: {
     resetOrderDetails: (state) => {
-      console.log("resetOrderDetails");
-
       state.orderDetails = null;
+      state.activeDetailRequest = null;
+      state.isLoading = false;
     },
   },
   extraReducers: (builder) => {
@@ -69,14 +76,17 @@ const adminOrderSlice = createSlice({
         state.isLoading = false;
         state.orderList = [];
       })
-      .addCase(getOrderDetailsForAdmin.pending, (state) => {
+      .addCase(getOrderDetailsForAdmin.pending, (state, action) => {
         state.isLoading = true;
+        state.activeDetailRequest = action.meta.requestId;
       })
       .addCase(getOrderDetailsForAdmin.fulfilled, (state, action) => {
+        if (state.activeDetailRequest !== action.meta.requestId) return;
         state.isLoading = false;
         state.orderDetails = action.payload.data;
       })
-      .addCase(getOrderDetailsForAdmin.rejected, (state) => {
+      .addCase(getOrderDetailsForAdmin.rejected, (state, action) => {
+        if (state.activeDetailRequest !== action.meta.requestId) return;
         state.isLoading = false;
         state.orderDetails = null;
       });

@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_BASE_URL } from "@/config";
+import { isLocalProductId } from "@/lib/catalog-source";
 const baseURL = `${API_BASE_URL}/shop/review`;
 
 const initialState = {
@@ -11,6 +12,8 @@ const initialState = {
 export const addReview = createAsyncThunk(
   "/order/addReview",
   async (formdata) => {
+    if (isLocalProductId(formdata.productId))
+      throw new Error("Local catalog reviews are read-only.");
     const response = await axios.post(`${baseURL}/add`, formdata);
 
     return response.data;
@@ -18,6 +21,7 @@ export const addReview = createAsyncThunk(
 );
 
 export const getReviews = createAsyncThunk("/order/getReviews", async (id) => {
+  if (isLocalProductId(id)) return { success: true, data: [] };
   const response = await axios.get(`${baseURL}/${id}`);
 
   return response.data;

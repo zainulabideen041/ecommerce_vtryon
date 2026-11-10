@@ -1,0 +1,1835 @@
+﻿/* Editorial chapters: each has its own composition and motion vocabulary. */
+.motion-ribbon {
+  pointer-events: none;
+  color: currentColor;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+.motion-ribbon path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.mood-section {
+  overflow: hidden;
+}
+.mood-heading {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 12px 50px;
+  align-items: end;
+  margin-bottom: 45px;
+}
+.mood-heading .eyebrow {
+  grid-column: 1/-1;
+}
+.storefront-theme .mood-heading h2,
+.storefront-theme .color-story h2,
+.storefront-theme .detail-studio h2,
+.storefront-theme .lookbook-heading h2 {
+  font-size: clamp(44px, 5.1vw, 80px);
+  line-height: 1.02;
+  letter-spacing: -0.07em;
+  font-weight: 800;
+  margin: 5px 0 0;
+}
+.mood-heading > p:last-child {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #82777e;
+  max-width: 250px;
+  justify-self: end;
+  margin-bottom: 8px;
+}
+.mood-portraits {
+  display: grid;
+  grid-template-columns: 1fr 1.13fr 1fr;
+  align-items: start;
+  gap: 25px;
+  padding-bottom: 5px;
+}
+.mood-portrait:nth-child(2) {
+  padding-top: 65px;
+}
+.mood-portrait:nth-child(3) {
+  padding-top: 25px;
+}
+.mood-photo {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+  background: #e9dfdb;
+  border-radius: 3px;
+  text-align: left;
+}
+.mood-photo-surface {
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  transition: transform 0.8s var(--fashion-ease);
+}
+.mood-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+  transition: filter 0.5s;
+}
+.mood-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, #100a1655, transparent 50%);
+  pointer-events: none;
+}
+.mood-number {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  z-index: 2;
+}
+.mood-photo-arrow {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 43px;
+  height: 43px;
+  border: 1px solid #ffffff90;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: white;
+  z-index: 2;
+  transition:
+    background 0.3s,
+    color 0.3s,
+    transform 0.4s;
+}
+.mood-photo-word {
+  position: absolute;
+  left: 17px;
+  bottom: 8px;
+  color: #fff;
+  font-size: clamp(50px, 6.5vw, 100px);
+  font-weight: 800;
+  letter-spacing: -0.09em;
+  line-height: 1;
+  z-index: 2;
+}
+.mood-soft .mood-photo {
+  border-radius: 180px 180px 3px 3px;
+  background: #e6ceca;
+}
+.mood-bold .mood-photo {
+  border-radius: 3px 3px 150px 3px;
+}
+.mood-photo:hover .mood-photo-surface,
+.mood-photo:focus-visible .mood-photo-surface {
+  transform: scale(1.04);
+}
+.mood-photo:hover .mood-photo-arrow,
+.mood-photo:focus-visible .mood-photo-arrow {
+  background: white;
+  color: #801831;
+  transform: rotate(8deg);
+}
+.mood-caption {
+  position: relative;
+  padding: 20px 0 0;
+}
+.storefront-theme .mood-caption h3 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  margin-bottom: 6px;
+}
+.mood-caption p {
+  font-size: 10px;
+  line-height: 1.8;
+  color: #82777e;
+  max-width: 90%;
+}
+.mood-caption > span {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.color-story {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 740px;
+  padding: 75px 7%;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--color-story-bg);
+  color: var(--color-story-ink);
+  transition:
+    background-color 0.65s,
+    color 0.65s;
+}
+.color-teal {
+  --color-story-bg: #153f42;
+  --color-story-ink: #eff4ee;
+  --color-story-muted: #b4d0ca;
+}
+.color-rose {
+  --color-story-bg: #e8c2cb;
+  --color-story-ink: #572737;
+  --color-story-muted: #815866;
+}
+.color-blue {
+  --color-story-bg: #c9dce2;
+  --color-story-ink: #223f4c;
+  --color-story-muted: #5c7884;
+}
+.color-noir {
+  --color-story-bg: #24212a;
+  --color-story-ink: #f3edf4;
+  --color-story-muted: #b9aabd;
+}
+.color-story-word {
+  position: absolute;
+  left: -0.04em;
+  bottom: -0.16em;
+  font-size: clamp(180px, 30vw, 460px);
+  font-weight: 800;
+  letter-spacing: -0.1em;
+  line-height: 1;
+  opacity: 0.12;
+  z-index: -1;
+  pointer-events: none;
+}
+.color-story-copy {
+  position: relative;
+  z-index: 2;
+  align-self: center;
+  padding: 10px 7% 40px 0;
+}
+.storefront-theme .color-story .eyebrow {
+  color: var(--color-story-muted);
+}
+.storefront-theme .color-story h2 {
+  color: var(--color-story-ink);
+  font-size: clamp(45px, 5.2vw, 83px);
+}
+.color-story-intro {
+  font-size: 12px;
+  color: var(--color-story-muted);
+  margin: 25px 0 22px;
+}
+.color-palette {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 32px;
+}
+.color-palette button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 49px;
+  min-height: 66px;
+}
+.color-palette button > span:first-child {
+  display: block;
+  width: 34px;
+  height: 34px;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  outline: 1px solid transparent;
+  outline-offset: 5px;
+  box-shadow: 0 0 0 1px #ffffff60;
+  transition:
+    outline-color 0.3s,
+    transform 0.35s;
+}
+.color-palette button[aria-pressed="true"] > span:first-child {
+  outline-color: var(--color-story-ink);
+  transform: scale(1.05);
+}
+.color-palette button > span:last-child {
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  color: var(--color-story-muted);
+}
+.color-story-product {
+  max-width: 340px;
+  min-height: 180px;
+}
+.storefront-theme .color-story-product h3 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  margin: 0 0 12px;
+  color: var(--color-story-ink);
+}
+.color-story-product > p {
+  font-size: 11px;
+  line-height: 1.9;
+  color: var(--color-story-muted);
+  max-width: 290px;
+}
+.color-story-product .text-link {
+  font-size: 10px;
+  margin-top: 15px;
+  text-align: left;
+  line-height: 1.7;
+  gap: 15px;
+}
+.color-story-price {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.color-story-photo {
+  position: relative;
+  align-self: center;
+  width: 100%;
+  height: 590px;
+  border-radius: 260px 260px 18px 18px;
+  overflow: hidden;
+  background: #ffffff22;
+  color: white;
+}
+.color-story-photo img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+}
+.color-story-photo::after {
+  position: absolute;
+  content: "";
+  inset: 0;
+  background: linear-gradient(0deg, #0a10244a, transparent 35%);
+  pointer-events: none;
+}
+.color-story-photo-tag {
+  position: absolute;
+  left: 25px;
+  bottom: 24px;
+  font-size: 7px;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  z-index: 2;
+}
+.color-photo-arrow {
+  position: absolute;
+  right: 25px;
+  bottom: 22px;
+  z-index: 2;
+  transition: transform 0.4s;
+}
+.color-story-photo:hover .color-photo-arrow {
+  transform: translate(4px, -4px);
+}
+.color-story-ribbon {
+  position: absolute;
+  left: -10%;
+  top: 20%;
+  width: 75%;
+  opacity: 0.15;
+  z-index: -1;
+  transform: rotate(-12deg);
+}
+.detail-studio {
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  gap: 8%;
+  align-items: center;
+  position: relative;
+}
+.detail-studio-copy {
+  position: relative;
+  padding: 20px 0 90px;
+}
+.detail-studio-copy > p:not(.eyebrow) {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #82777e;
+  max-width: 330px;
+  margin: 25px 0;
+}
+.detail-studio-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 12px;
+}
+.detail-lens-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border: 1px solid #d7cbd0;
+  border-radius: 999px;
+  padding: 12px 20px;
+  min-height: 48px;
+  font-size: 10px;
+  font-weight: 700;
+  transition:
+    background 0.25s,
+    color 0.25s;
+}
+.detail-lens-toggle[aria-pressed="true"] {
+  background: #801831;
+  border-color: #801831;
+  color: white;
+}
+.detail-studio-actions .text-link {
+  font-size: 10px;
+}
+.detail-product-note {
+  border-top: 1px solid #e4dcdf;
+  padding-top: 22px;
+  margin-top: 30px;
+  max-width: 330px;
+}
+.detail-product-note > span {
+  font-size: 7px;
+  letter-spacing: 0.15em;
+  color: #82777e;
+  font-weight: 700;
+}
+.storefront-theme .detail-product-note h3 {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.7;
+  letter-spacing: -0.025em;
+  margin-top: 10px;
+  max-width: 290px;
+}
+.detail-product-note > p {
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 9px;
+}
+.detail-stitch {
+  position: absolute;
+  left: 0;
+  bottom: -20px;
+  width: 80%;
+  height: 130px;
+  stroke: #b28e9b;
+  stroke-width: 0.8;
+  opacity: 0.7;
+  pointer-events: none;
+}
+.detail-stitch path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.detail-studio-figure {
+  min-width: 0;
+}
+.detail-studio-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/5;
+  overflow: hidden;
+  background: #d5dfe2;
+  border-radius: 3px;
+  isolation: isolate;
+  cursor: crosshair;
+}
+.detail-studio-photo > img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: 50% 25%;
+}
+.detail-loupe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 210px;
+  height: 210px;
+  border: 5px solid #ffffffed;
+  border-radius: 50%;
+  background-size: 250% auto;
+  background-repeat: no-repeat;
+  background-color: #e9e1df;
+  box-shadow: 0 18px 50px #112c3a40;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+  transition: opacity 0.25s;
+  transform: translate(100px, 120px);
+}
+.has-lens .detail-loupe {
+  opacity: 1;
+}
+.detail-loupe::after {
+  content: "+";
+  position: absolute;
+  top: calc(50% - 10px);
+  left: calc(50% - 6px);
+  font-size: 18px;
+  font-weight: 400;
+  color: #ffffffb0;
+  text-shadow: 0 1px 6px #0005;
+}
+.detail-loupe > span {
+  position: absolute;
+  left: calc(50% - 22px);
+  bottom: 10px;
+  width: 44px;
+  text-align: center;
+  background: #163744bb;
+  color: white;
+  border-radius: 999px;
+  font-size: 9px;
+  padding: 4px 8px;
+}
+.detail-corner {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-color: #ffffffdd;
+  border-style: solid;
+  pointer-events: none;
+}
+.detail-corner-tl {
+  top: 17px;
+  left: 17px;
+  border-width: 1px 0 0 1px;
+}
+.detail-corner-br {
+  right: 17px;
+  bottom: 17px;
+  border-width: 0 1px 1px 0;
+}
+.detail-photo-label {
+  position: absolute;
+  left: 20px;
+  bottom: 21px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: #fff;
+  background: #1b354b60;
+  backdrop-filter: blur(5px);
+  padding: 8px 11px;
+  border-radius: 999px;
+}
+.detail-studio-figure > figcaption {
+  font-size: 8px;
+  line-height: 1.8;
+  color: #94858d;
+  margin-top: 12px;
+}
+.fashion-lookbook {
+  padding: 85px 0 55px;
+  background: #f0e8ea;
+  overflow: hidden;
+}
+.lookbook-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 40px;
+  padding: 0 5%;
+  margin-bottom: 40px;
+}
+.lookbook-heading-right > p {
+  font-size: 11px;
+  color: #82777e;
+  max-width: 270px;
+  line-height: 1.9;
+  margin-bottom: 20px;
+}
+.lookbook-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.lookbook-controls button {
+  width: 46px;
+  height: 46px;
+  border: 1px solid #cdbbc3;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition:
+    background 0.25s,
+    color 0.25s;
+}
+.lookbook-controls button:hover:not(:disabled) {
+  background: #801831;
+  border-color: #801831;
+  color: white;
+}
+.lookbook-track {
+  display: flex;
+  align-items: start;
+  gap: 30px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 5%;
+  padding: 5px 5% 30px;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.lookbook-track::-webkit-scrollbar {
+  display: none;
+}
+.lookbook-card {
+  flex: 0 0 31%;
+  scroll-snap-align: start;
+  min-width: 0;
+}
+.lookbook-card:nth-child(even) {
+  padding-top: 45px;
+}
+.lookbook-card > button {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: #ddd0d1;
+  overflow: hidden;
+  border-radius: 3px;
+}
+.lookbook-card > button > img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+  transition: transform 0.8s var(--fashion-ease);
+}
+.lookbook-card > button:hover > img,
+.lookbook-card > button:focus-visible > img {
+  transform: scale(1.035);
+}
+.lookbook-card-number {
+  position: absolute;
+  left: 15px;
+  top: 10px;
+  z-index: 2;
+  font-size: 55px;
+  font-weight: 800;
+  letter-spacing: -0.08em;
+  color: #fff;
+  line-height: 1;
+  mix-blend-mode: soft-light;
+}
+.lookbook-card-arrow {
+  position: absolute;
+  right: 15px;
+  bottom: 16px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffffffed;
+  color: #801831;
+}
+.lookbook-card > div {
+  padding-top: 18px;
+}
+.lookbook-card > div .eyebrow {
+  font-size: 7px;
+}
+.storefront-theme .lookbook-card h3 {
+  font-size: 13px;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  line-height: 1.7;
+  max-width: 85%;
+  margin-top: 7px;
+}
+.lookbook-price {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 10px;
+}
+.lookbook-progress {
+  height: 2px;
+  background: #dac9d1;
+  margin: 18px 5% 0;
+  overflow: hidden;
+}
+.lookbook-progress > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #801831;
+  transform-origin: left;
+  transform: scaleX(0.15);
+}
+.lookbook-hint {
+  font-size: 8px;
+  color: #94818c;
+  margin: 15px 5% 0;
+}
+.fashion-manifesto {
+  position: relative;
+  background: #dce8bc;
+  color: #203b32;
+  padding: 80px 5% 90px;
+  text-align: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+.fashion-manifesto .eyebrow {
+  color: #6b8068;
+}
+.manifesto-mark {
+  display: block;
+  font-size: 85px;
+  line-height: 1;
+  margin: 20px auto 30px;
+  max-width: 100px;
+}
+.storefront-theme .fashion-manifesto h2 {
+  font-size: clamp(46px, 7.1vw, 112px);
+  line-height: 1.02;
+  font-weight: 800;
+  letter-spacing: -0.07em;
+  color: #203b32;
+}
+.manifesto-line {
+  display: block;
+  white-space: nowrap;
+}
+.manifesto-line em {
+  font-size: 1.1em;
+}
+.fashion-manifesto > p:last-of-type {
+  font-size: 11px;
+  line-height: 1.8;
+  margin: 30px auto 0;
+  max-width: 360px;
+  color: #60755d;
+}
+.fashion-manifesto .motion-ribbon {
+  position: absolute;
+  right: -10%;
+  top: 0;
+  width: 60%;
+  height: 100%;
+  opacity: 0.15;
+  z-index: -1;
+  transform: rotate(20deg);
+}
+/* Collection as a fashion index, with the commerce controls always at hand. */
+.collection-campaign {
+  position: relative;
+  min-height: 450px;
+  padding: 55px 5%;
+  background: #231a25;
+  color: #fff;
+  overflow: hidden;
+  isolation: isolate;
+}
+.collection-campaign-copy {
+  position: relative;
+  z-index: 3;
+  max-width: 55%;
+}
+.storefront-theme .collection-campaign .eyebrow {
+  color: #bb9fad;
+  font-size: 8px;
+}
+.storefront-theme .collection-campaign-title {
+  font-size: clamp(64px, 7.8vw, 120px);
+  line-height: 0.91;
+  letter-spacing: -0.075em;
+  font-weight: 800;
+  color: #fff;
+  margin: 22px 0;
+}
+.collection-campaign-title > span,
+.collection-campaign-title > em {
+  display: block;
+}
+.collection-campaign-title > em {
+  font-size: 1.04em;
+  color: #f6b8c0;
+  line-height: 1.05;
+}
+.collection-campaign-copy > p:not(.eyebrow) {
+  font-size: 11px;
+  line-height: 1.9;
+  color: #bda7b4;
+  margin-top: 22px;
+}
+.collection-campaign-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  color: #dfc8d4;
+}
+.collection-campaign-count > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f6b8c0;
+}
+.collection-campaign-portraits {
+  position: absolute;
+  right: 5%;
+  top: 35px;
+  bottom: 30px;
+  width: 39%;
+  z-index: 2;
+}
+.collection-campaign-portrait {
+  position: absolute;
+  width: 54%;
+  height: 88%;
+  overflow: hidden;
+  background: #d8c4cd;
+  border-radius: 120px 120px 8px 8px;
+}
+.collection-campaign-portrait > img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: 50% 18%;
+  transition: transform 0.85s var(--fashion-ease);
+}
+.collection-campaign-portrait > span {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffffffed;
+  color: #801831;
+  display: grid;
+  place-items: center;
+}
+.collection-campaign-portrait:hover > img,
+.collection-campaign-portrait:focus-visible > img {
+  transform: scale(1.04);
+}
+.collection-campaign-portrait.portrait-1 {
+  top: 0;
+  left: 0;
+}
+.collection-campaign-portrait.portrait-2 {
+  right: 0;
+  bottom: 0;
+  height: 72%;
+  width: 43%;
+  border-radius: 8px 8px 90px 8px;
+}
+.collection-campaign-stamp {
+  position: absolute;
+  right: 43%;
+  bottom: 25px;
+  font-size: 170px;
+  font-weight: 800;
+  letter-spacing: -0.13em;
+  color: #ffffff06;
+  line-height: 1;
+  z-index: -1;
+}
+.collection-campaign-art {
+  position: absolute;
+  right: -10%;
+  top: -30px;
+  width: 65%;
+  height: calc(100% + 60px);
+  color: #aa7898;
+  opacity: 0.23;
+  z-index: -1;
+  transform: rotate(-12deg);
+}
+.collection-discovery {
+  position: sticky;
+  top: 82px;
+  z-index: 24;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  padding: 14px 5%;
+  min-height: 67px;
+  background: #faf8f6f5;
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid #e4dcdf;
+}
+.collection-discovery > span {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #94848d;
+  white-space: nowrap;
+}
+.collection-discovery > nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 1;
+  min-width: 0;
+}
+.collection-discovery > nav::-webkit-scrollbar {
+  display: none;
+}
+.collection-discovery > nav > button {
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  min-height: 38px;
+  transition:
+    background 0.25s,
+    color 0.25s,
+    border-color 0.25s;
+}
+.collection-discovery > nav > button[aria-pressed="true"] {
+  background: #801831;
+  color: #fff;
+}
+.collection-discovery > nav > button:hover:not([aria-pressed="true"]) {
+  border-color: #d7c7cf;
+  background: #f0e7eb;
+}
+.collection-skip-products {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+  min-height: 38px;
+}
+.collection-skip-products > span {
+  font-size: 17px;
+}
+.storefront-theme .collection-content {
+  padding-top: 35px;
+  scroll-margin-top: 155px;
+}
+.collection-studio .collection-layout {
+  gap: 35px;
+}
+.collection-studio .filter-panel {
+  top: 185px;
+}
+.collection-studio .collection-toolbar {
+  position: sticky;
+  top: 149px;
+  z-index: 20;
+  background: #faf8f6f5;
+  backdrop-filter: blur(12px);
+  padding-top: 12px;
+  min-height: 65px;
+  margin-bottom: 22px;
+}
+.collection-display-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.collection-view-switch {
+  display: flex;
+  border: 1px solid #dfd3d9;
+  border-radius: 999px;
+  overflow: hidden;
+  padding: 3px;
+  gap: 2px;
+}
+.collection-view-switch > button {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #a38d98;
+  transition:
+    background 0.25s,
+    color 0.25s;
+}
+.collection-view-switch > button[aria-pressed="true"] {
+  background: #ede2e7;
+  color: #801831;
+}
+.collection-studio .collection-products.view-editorial {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 45px 30px;
+}
+.collection-studio .collection-products.view-editorial .garment-photo {
+  aspect-ratio: 4/5;
+}
+.collection-studio .collection-products.view-editorial .garment-meta h3 {
+  font-size: 14px;
+  min-height: 25px;
+}
+.collection-interlude {
+  grid-column: 1/-1;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  min-height: 380px;
+  padding: 35px 40px;
+  background: #801831;
+  border-radius: 4px;
+  overflow: hidden;
+  color: white;
+  isolation: isolate;
+  margin: 5px 0;
+}
+.collection-interlude > div {
+  position: relative;
+  z-index: 2;
+  align-self: center;
+}
+.storefront-theme .collection-interlude .eyebrow {
+  font-size: 6px;
+  color: #dca7b6;
+}
+.storefront-theme .collection-interlude h2 {
+  font-size: clamp(30px, 3.3vw, 50px);
+  line-height: 1.07;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  color: #fff;
+  margin: 16px 0;
+}
+.collection-interlude h2 em {
+  color: #ffbdab;
+  white-space: nowrap;
+}
+.collection-interlude > div > p:not(.eyebrow) {
+  font-size: 9px;
+  line-height: 1.8;
+  max-width: 175px;
+  color: #e0b1bf;
+}
+.collection-interlude .text-link {
+  font-size: 9px;
+  margin-top: 12px;
+  color: white;
+}
+.interlude-photo {
+  width: 100%;
+  height: 310px;
+  align-self: center;
+  position: relative;
+  z-index: 1;
+  background: #e5c8cf;
+  border-radius: 150px 150px 3px 3px;
+  overflow: hidden;
+}
+.interlude-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+  transition: transform 0.8s var(--fashion-ease);
+}
+.interlude-photo:hover img {
+  transform: scale(1.04);
+}
+.interlude-mark {
+  position: absolute;
+  left: 39%;
+  top: -25px;
+  font-size: 220px;
+  line-height: 1;
+  color: #c96a82;
+  opacity: 0.18;
+  z-index: -1;
+  pointer-events: none;
+}
+.collection-fitting-note {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  background: #eee5e9;
+  padding: 30px;
+  border-radius: 18px;
+  margin-top: 55px;
+}
+.collection-fitting-icon {
+  width: 55px;
+  height: 55px;
+  min-width: 55px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #801831;
+  color: white;
+}
+.collection-fitting-note .eyebrow {
+  font-size: 6px;
+}
+.storefront-theme .collection-fitting-note h2 {
+  font-size: 24px;
+  letter-spacing: -0.05em;
+  font-weight: 700;
+  margin: 8px 0;
+}
+.collection-fitting-note p:not(.eyebrow) {
+  font-size: 10px;
+  line-height: 1.8;
+  color: #82777e;
+}
+.collection-fitting-note .solid-link {
+  margin-left: auto;
+  font-size: 10px;
+  min-height: 47px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+@media (max-width: 1200px) {
+  .mood-portraits {
+    gap: 20px;
+  }
+  .mood-portrait:nth-child(2) {
+    padding-top: 45px;
+  }
+  .mood-portrait:nth-child(3) {
+    padding-top: 15px;
+  }
+  .mood-caption h3 {
+    font-size: 20px;
+  }
+  .color-story {
+    padding: 60px 6%;
+    min-height: 680px;
+  }
+  .color-story-photo {
+    height: 550px;
+  }
+  .color-story-copy {
+    padding-right: 8%;
+  }
+  .color-story-product {
+    min-height: 200px;
+  }
+  .color-palette {
+    gap: 13px;
+  }
+  .detail-studio {
+    gap: 6%;
+  }
+  .detail-loupe {
+    width: 180px;
+    height: 180px;
+  }
+  .detail-studio-copy {
+    padding-bottom: 80px;
+  }
+  .detail-stitch {
+    height: 110px;
+    bottom: -10px;
+  }
+  .lookbook-card {
+    flex-basis: 35%;
+  }
+  .lookbook-track {
+    gap: 23px;
+  }
+  .lookbook-card:nth-child(even) {
+    padding-top: 35px;
+  }
+  .collection-discovery {
+    gap: 15px;
+  }
+  .collection-discovery > span {
+    display: none;
+  }
+  .collection-discovery > nav > button {
+    font-size: 9px;
+    padding-inline: 14px;
+  }
+  .collection-campaign {
+    min-height: 430px;
+  }
+  .collection-campaign-portraits {
+    width: 40%;
+    top: 45px;
+    bottom: 40px;
+  }
+  .collection-campaign-count {
+    font-size: 7px;
+  }
+  .collection-campaign-copy > p:not(.eyebrow) {
+    font-size: 10px;
+  }
+  .collection-studio .collection-products.view-editorial {
+    gap: 35px 22px;
+  }
+  .collection-interlude {
+    padding: 30px;
+    min-height: 350px;
+  }
+  .interlude-photo {
+    height: 290px;
+  }
+  .collection-interlude h2 {
+    font-size: 36px;
+  }
+  .collection-fitting-note {
+    padding: 25px;
+    gap: 16px;
+  }
+  .collection-fitting-note h2 {
+    font-size: 20px;
+  }
+}
+@media (max-width: 900px) and (min-width: 768px) {
+  .mood-heading {
+    grid-template-columns: 1.5fr 1fr;
+  }
+  .mood-portraits {
+    gap: 15px;
+  }
+  .storefront-theme .mood-caption h3 {
+    font-size: 17px;
+  }
+  .mood-caption p {
+    font-size: 9px;
+  }
+  .mood-photo-arrow {
+    width: 36px;
+    height: 36px;
+    top: 12px;
+    right: 12px;
+  }
+  .color-story {
+    padding: 50px 5%;
+    min-height: 630px;
+  }
+  .color-story-photo {
+    height: 500px;
+  }
+  .storefront-theme .color-story h2 {
+    font-size: 50px;
+  }
+  .color-palette {
+    gap: 8px;
+  }
+  .color-palette button {
+    min-width: 42px;
+  }
+  .color-story-product > p {
+    font-size: 10px;
+  }
+  .storefront-theme .detail-studio h2 {
+    font-size: 46px;
+  }
+  .detail-studio-copy > p:not(.eyebrow) {
+    font-size: 11px;
+  }
+  .detail-loupe {
+    width: 150px;
+    height: 150px;
+  }
+  .detail-studio {
+    gap: 5%;
+  }
+  .collection-campaign-copy {
+    max-width: 56%;
+  }
+  .collection-campaign-portraits {
+    right: 3%;
+    width: 37%;
+  }
+  .collection-campaign-title {
+    font-size: 75px;
+  }
+  .collection-campaign-portrait.portrait-1 {
+    width: 75%;
+    height: 85%;
+    left: 10%;
+  }
+  .collection-campaign-portrait.portrait-2 {
+    display: none;
+  }
+  .collection-studio .collection-products.view-editorial {
+    grid-template-columns: 1fr;
+  }
+  .collection-studio .collection-products.view-editorial .garment-photo {
+    aspect-ratio: 3/4;
+  }
+  .collection-fitting-note .solid-link {
+    padding-inline: 15px;
+    font-size: 9px;
+    gap: 12px;
+  }
+  .collection-fitting-icon {
+    display: none;
+  }
+}
+@media (max-width: 767px) {
+  .mood-heading {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+  .storefront-theme .mood-heading h2,
+  .storefront-theme .color-story h2,
+  .storefront-theme .detail-studio h2,
+  .storefront-theme .lookbook-heading h2 {
+    font-size: 44px;
+    line-height: 1.05;
+  }
+  .mood-heading > p:last-child {
+    justify-self: start;
+    max-width: none;
+    font-size: 10px;
+    margin: 7px 0 0;
+  }
+  .mood-portraits {
+    display: flex;
+    gap: 17px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 0 0 10px;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .mood-portraits::-webkit-scrollbar {
+    display: none;
+  }
+  .mood-portrait {
+    flex: 0 0 83%;
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+  .mood-portrait:nth-child(2),
+  .mood-portrait:nth-child(3) {
+    padding-top: 0;
+  }
+  .mood-photo-word {
+    font-size: 70px;
+  }
+  .mood-photo-arrow {
+    width: 42px;
+    height: 42px;
+  }
+  .storefront-theme .mood-caption h3 {
+    font-size: 22px;
+  }
+  .mood-caption p {
+    font-size: 10px;
+  }
+  .mood-caption > span {
+    font-size: 12px;
+  }
+  .color-story {
+    display: flex;
+    flex-direction: column;
+    padding: 48px 24px 35px;
+    min-height: 0;
+  }
+  .color-story-copy {
+    padding: 0;
+    align-self: stretch;
+  }
+  .color-story-word {
+    font-size: 47vw;
+    bottom: -0.08em;
+    left: -0.02em;
+    z-index: 0;
+  }
+  .color-story-intro {
+    font-size: 11px;
+    margin: 22px 0;
+  }
+  .color-palette {
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+  .color-palette button {
+    min-height: 65px;
+  }
+  .color-palette button > span:first-child {
+    width: 33px;
+    height: 33px;
+  }
+  .color-story-product {
+    min-height: 0;
+    max-width: none;
+    margin-bottom: 28px;
+  }
+  .storefront-theme .color-story-product h3 {
+    font-size: 19px;
+  }
+  .color-story-product > p {
+    font-size: 10px;
+    max-width: 285px;
+  }
+  .color-story-product .text-link {
+    font-size: 10px;
+    max-width: 100%;
+  }
+  .color-story-price {
+    font-size: 12px;
+    margin-top: 12px;
+  }
+  .color-story-photo {
+    height: 470px;
+    width: 88%;
+    align-self: flex-end;
+    border-radius: 180px 180px 8px 8px;
+    z-index: 1;
+  }
+  .color-story-photo-tag {
+    font-size: 6px;
+    left: 18px;
+    bottom: 21px;
+  }
+  .color-photo-arrow {
+    right: 18px;
+    bottom: 18px;
+    width: 21px;
+  }
+  .color-story-ribbon {
+    width: 140%;
+    left: -35%;
+    top: 30%;
+    z-index: 0;
+    opacity: 0.12;
+  }
+  .storefront-theme .detail-studio {
+    grid-template-columns: 1fr;
+    gap: 35px;
+  }
+  .detail-studio-copy {
+    padding: 0;
+  }
+  .detail-studio-copy > p:not(.eyebrow) {
+    font-size: 11px;
+    margin: 22px 0;
+    max-width: 320px;
+  }
+  .detail-studio-actions {
+    gap: 10px;
+  }
+  .detail-lens-toggle {
+    font-size: 10px;
+    padding: 12px 18px;
+    min-height: 47px;
+  }
+  .detail-product-note {
+    margin-top: 24px;
+    max-width: none;
+    padding-top: 20px;
+  }
+  .storefront-theme .detail-product-note h3 {
+    font-size: 13px;
+    max-width: 260px;
+  }
+  .detail-product-note > p {
+    font-size: 12px;
+  }
+  .detail-stitch {
+    width: 120px;
+    height: 100px;
+    bottom: -10px;
+    right: 0;
+    left: auto;
+    opacity: 0.4;
+  }
+  .detail-studio-photo {
+    aspect-ratio: 4/5;
+  }
+  .detail-loupe {
+    width: 160px;
+    height: 160px;
+    border-width: 4px;
+  }
+  .detail-studio-figure > figcaption {
+    font-size: 8px;
+    max-width: 300px;
+  }
+  .detail-photo-label {
+    font-size: 6px;
+    left: 15px;
+    bottom: 17px;
+  }
+  .fashion-lookbook {
+    padding: 50px 0 35px;
+  }
+  .lookbook-heading {
+    padding-inline: 20px;
+    gap: 25px;
+    margin-bottom: 30px;
+  }
+  .lookbook-heading-right {
+    max-width: 125px;
+  }
+  .lookbook-heading-right > p {
+    font-size: 9px;
+    line-height: 1.8;
+    margin-bottom: 15px;
+  }
+  .lookbook-controls {
+    gap: 7px;
+  }
+  .lookbook-controls button {
+    width: 42px;
+    height: 42px;
+  }
+  .lookbook-track {
+    padding: 0 20px 20px;
+    gap: 20px;
+    scroll-padding-left: 20px;
+  }
+  .lookbook-card {
+    flex: 0 0 78%;
+  }
+  .lookbook-card:nth-child(even) {
+    padding-top: 28px;
+  }
+  .lookbook-card-number {
+    font-size: 55px;
+  }
+  .lookbook-card > div {
+    padding-top: 15px;
+  }
+  .storefront-theme .lookbook-card h3 {
+    font-size: 12px;
+    max-width: 90%;
+  }
+  .lookbook-price {
+    font-size: 12px;
+  }
+  .lookbook-progress {
+    margin: 18px 20px 0;
+  }
+  .lookbook-hint {
+    margin: 13px 20px 0;
+    font-size: 8px;
+  }
+  .fashion-manifesto {
+    padding: 50px 20px 55px;
+  }
+  .manifesto-mark {
+    font-size: 65px;
+    margin: 20px auto 25px;
+  }
+  .storefront-theme .fashion-manifesto h2 {
+    font-size: clamp(29px, 8.3vw, 56px);
+    line-height: 1.16;
+  }
+  .manifesto-line em {
+    font-size: 1.18em;
+  }
+  .fashion-manifesto > p:last-of-type {
+    font-size: 10px;
+    max-width: 250px;
+    margin-top: 25px;
+  }
+  .fashion-manifesto .motion-ribbon {
+    width: 110%;
+    right: -50%;
+    opacity: 0.1;
+  }
+  .collection-campaign {
+    min-height: 470px;
+    padding: 30px 20px;
+  }
+  .collection-campaign-copy {
+    max-width: 100%;
+  }
+  .storefront-theme .collection-campaign .eyebrow {
+    font-size: 6px;
+  }
+  .storefront-theme .collection-campaign-title {
+    font-size: 61px;
+    line-height: 0.95;
+    margin: 22px 0;
+    max-width: 100%;
+  }
+  .collection-campaign-copy > p:not(.eyebrow) {
+    font-size: 9px;
+    line-height: 1.9;
+    max-width: 165px;
+    margin-top: 20px;
+  }
+  .collection-campaign-copy > p:not(.eyebrow) > br {
+    display: none;
+  }
+  .collection-campaign-count {
+    font-size: 7px;
+    line-height: 1.8;
+    max-width: 135px;
+    margin-top: 20px;
+  }
+  .collection-campaign-count > span {
+    width: 4px;
+    height: 4px;
+    flex-shrink: 0;
+  }
+  .collection-campaign-portraits {
+    width: 43%;
+    top: 215px;
+    bottom: 25px;
+    right: 20px;
+  }
+  .collection-campaign-portrait.portrait-1 {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 100px 100px 4px 4px;
+  }
+  .collection-campaign-portrait.portrait-2 {
+    display: none;
+  }
+  .collection-campaign-portrait > span {
+    width: 33px;
+    height: 33px;
+    right: 10px;
+    bottom: 10px;
+  }
+  .collection-campaign-stamp {
+    font-size: 145px;
+    left: 20px;
+    right: auto;
+    bottom: 20px;
+  }
+  .collection-campaign-art {
+    width: 140%;
+    right: -60%;
+    top: 20px;
+    opacity: 0.18;
+  }
+  .collection-discovery {
+    top: 72px;
+    gap: 0;
+    padding: 10px 20px;
+    min-height: 58px;
+  }
+  .collection-discovery > span,
+  .collection-skip-products {
+    display: none;
+  }
+  .collection-discovery > nav {
+    gap: 7px;
+  }
+  .collection-discovery > nav > button {
+    font-size: 9px;
+    min-height: 38px;
+    padding: 8px 14px;
+    flex-shrink: 0;
+  }
+  .storefront-theme .collection-content {
+    padding-top: 20px;
+    scroll-margin-top: 142px;
+  }
+  .collection-studio .collection-toolbar {
+    top: 130px;
+    min-height: 62px;
+    padding-block: 9px;
+    margin-bottom: 20px;
+    gap: 8px;
+  }
+  .collection-studio .collection-toolbar select {
+    max-width: 140px;
+    font-size: 8px;
+    padding: 8px 20px 8px 11px;
+    min-height: 38px;
+  }
+  .collection-display-controls {
+    gap: 8px;
+  }
+  .collection-view-switch {
+    padding: 2px;
+    gap: 0;
+  }
+  .collection-view-switch > button {
+    width: 31px;
+    height: 33px;
+  }
+  .collection-view-switch > button svg {
+    width: 15px;
+  }
+  .collection-studio .collection-toolbar .result-count {
+    font-size: 8px;
+  }
+  .collection-studio .collection-products.view-editorial {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .collection-studio .collection-products.view-editorial .garment-meta h3 {
+    font-size: 14px;
+    min-height: 25px;
+  }
+  .collection-studio .collection-products.view-editorial .garment-photo {
+    aspect-ratio: 4/5;
+  }
+  .collection-interlude {
+    min-height: 300px;
+    padding: 23px 20px;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .storefront-theme .collection-interlude .eyebrow {
+    font-size: 5px;
+    letter-spacing: 0.08em;
+  }
+  .storefront-theme .collection-interlude h2 {
+    font-size: 27px;
+    margin: 12px 0;
+    line-height: 1.08;
+  }
+  .collection-interlude h2 em {
+    font-size: 0.98em;
+    white-space: normal;
+  }
+  .collection-interlude > div > p:not(.eyebrow) {
+    font-size: 8px;
+    max-width: 140px;
+  }
+  .collection-interlude .text-link {
+    font-size: 8px;
+    gap: 9px;
+  }
+  .collection-interlude .text-link svg {
+    width: 14px;
+  }
+  .interlude-photo {
+    height: 235px;
+    border-radius: 90px 90px 3px 3px;
+  }
+  .interlude-mark {
+    font-size: 160px;
+    left: 28%;
+    top: -15px;
+  }
+  .collection-fitting-note {
+    padding: 24px 20px;
+    margin-top: 35px;
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 14px;
+    border-radius: 15px;
+  }
+  .collection-fitting-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+  }
+  .collection-fitting-icon svg {
+    width: 18px;
+  }
+  .collection-fitting-note .eyebrow {
+    font-size: 5px;
+  }
+  .storefront-theme .collection-fitting-note h2 {
+    font-size: 20px;
+    line-height: 1.15;
+  }
+  .collection-fitting-note p:not(.eyebrow) {
+    font-size: 9px;
+    max-width: 230px;
+  }
+  .collection-fitting-note .solid-link {
+    grid-column: 2;
+    margin: 0;
+    justify-self: start;
+    font-size: 9px;
+    min-height: 44px;
+    padding: 12px 17px;
+    gap: 18px;
+  }
+}
+@media (max-width: 370px) {
+  .storefront-theme .mood-heading h2,
+  .storefront-theme .color-story h2,
+  .storefront-theme .detail-studio h2,
+  .storefront-theme .lookbook-heading h2 {
+    font-size: 39px;
+  }
+  .color-story {
+    padding-inline: 20px;
+  }
+  .color-story-photo {
+    height: 410px;
+    width: 93%;
+  }
+  .detail-loupe {
+    width: 135px;
+    height: 135px;
+  }
+  .lookbook-heading-right {
+    max-width: 105px;
+  }
+  .storefront-theme .collection-campaign-title {
+    font-size: 53px;
+  }
+  .collection-campaign-portraits {
+    top: 205px;
+    bottom: 25px;
+  }
+  .collection-campaign {
+    min-height: 445px;
+  }
+  .collection-studio .collection-toolbar {
+    gap: 5px;
+  }
+  .collection-view-switch > button {
+    width: 28px;
+  }
+  .collection-studio .collection-toolbar select {
+    max-width: 128px;
+  }
+  .storefront-theme .collection-interlude h2 {
+    font-size: 24px;
+  }
+  .collection-interlude {
+    padding-inline: 17px;
+    gap: 8px;
+  }
+  .interlude-photo {
+    height: 215px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .storefront-theme .mood-photo-surface,
+  .storefront-theme .lookbook-card > button > img,
+  .storefront-theme .collection-campaign-portrait > img,
+  .storefront-theme .interlude-photo img {
+    transform: none !important;
+  }
+  .manifesto-line,
+  .manifesto-mark,
+  .interlude-mark {
+    transform: none !important;
+  }
+  .motion-ribbon path,
+  .detail-stitch path {
+    stroke-dashoffset: 0 !important;
+  }
+  .lookbook-track {
+    scroll-behavior: auto !important;
+  }
+  .color-story {
+    transition: none !important;
+  }
+  .detail-loupe {
+    transition: none !important;
+  }
+}
+.collection-studio .desktop-filters .filter-panel{max-height:calc(100dvh - 205px);overflow-y:auto;scrollbar-width:thin;padding-right:10px;overscroll-behavior:contain}
+@media(max-width:1200px){.collection-studio .collection-products.view-editorial{grid-template-columns:1fr}}

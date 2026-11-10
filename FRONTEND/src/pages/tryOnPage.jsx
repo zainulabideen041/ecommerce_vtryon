@@ -264,7 +264,7 @@ const TryOnPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="fitting-room container mx-auto px-4 py-8 max-w-7xl">
       {/* Alert */}
       {visible && (
         <Alert className="relative mb-8 border-2 border-primary/30 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 shadow-lg">
@@ -278,6 +278,7 @@ const TryOnPage = () => {
           </AlertDescription>
           <button
             className="absolute top-4 right-4 p-1 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted"
+            aria-label="Dismiss fitting room information"
             onClick={() => setVisible(false)}
           >
             <X className="h-5 w-5" />
@@ -285,8 +286,11 @@ const TryOnPage = () => {
         </Alert>
       )}
 
+      <p className="fitting-caption">
+        THE LUXAR FITTING ROOM / A PERSONAL PREVIEW
+      </p>
       {/* Header */}
-      <div className="text-center mb-12 space-y-4">
+      <div className="fitting-heading text-center mb-12 space-y-4">
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-primary mb-4 shadow-glow">
           <Sparkles className="w-10 h-10 text-white animate-pulse" />
         </div>
@@ -300,13 +304,13 @@ const TryOnPage = () => {
       </div>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div className="fitting-workspace grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Clothing Section */}
         <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-xl">
           <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-accent/5">
             <CardTitle className="flex items-center gap-2 text-lg">
               <ImageIcon className="w-5 h-5 text-primary" />
-              Clothing Item
+              01 / The garment
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-4">
@@ -318,8 +322,13 @@ const TryOnPage = () => {
               <div className="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto hide-scrollbar">
                 {clothImageList && clothImageList.length > 0 ? (
                   clothImageList.map((clothImgItem, index) => (
-                    <div
+                    <button
+                      type="button"
                       key={index}
+                      aria-label={`Select cloth example ${index + 1}`}
+                      aria-pressed={
+                        exampleClothImgUrl === ensureHttps(clothImgItem.image)
+                      }
                       onClick={() =>
                         setExampleClothImgUrl(ensureHttps(clothImgItem.image))
                       }
@@ -334,7 +343,7 @@ const TryOnPage = () => {
                         className="w-full h-20 object-cover"
                         alt="Example cloth"
                       />
-                    </div>
+                    </button>
                   ))
                 ) : (
                   <p className="text-sm text-muted-foreground col-span-3">
@@ -373,7 +382,7 @@ const TryOnPage = () => {
           <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-accent/5">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Upload className="w-5 h-5 text-primary" />
-              Your Image
+              02 / Your photograph
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-4">
@@ -385,8 +394,13 @@ const TryOnPage = () => {
               <div className="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto hide-scrollbar">
                 {modelImageList && modelImageList.length > 0 ? (
                   modelImageList.map((modelImgItem, index) => (
-                    <div
+                    <button
+                      type="button"
                       key={index}
+                      aria-label={`Select model example ${index + 1}`}
+                      aria-pressed={
+                        exampleModelImgUrl === ensureHttps(modelImgItem.image)
+                      }
                       onClick={() =>
                         setExampleModelImgUrl(ensureHttps(modelImgItem.image))
                       }
@@ -401,7 +415,7 @@ const TryOnPage = () => {
                         className="w-full h-20 object-cover"
                         alt="Example model"
                       />
-                    </div>
+                    </button>
                   ))
                 ) : (
                   <p className="text-sm text-muted-foreground col-span-3">
@@ -414,7 +428,7 @@ const TryOnPage = () => {
             {/* Upload or Selected Model */}
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-muted-foreground">
-                Your Image
+                02 / Your photograph
               </h3>
               {!exampleModelImgUrl && !uploadedImageUrl ? (
                 <LocalImageUpload
@@ -534,7 +548,7 @@ const TryOnPage = () => {
       </div>
 
       {/* Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="fitting-guidance grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="border-2">
           <CardContent className="p-6 text-center space-y-2">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">

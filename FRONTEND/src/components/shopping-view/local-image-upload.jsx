@@ -124,13 +124,13 @@ function LocalImageUpload({
             id="image-upload-local"
             type="file"
             accept="image/*"
-            className="hidden"
+            className="sr-only"
             ref={inputRef}
             onChange={handleImageFileChange}
           />
           <Label
             htmlFor="image-upload-local"
-            className="flex flex-col items-center justify-center cursor-pointer space-y-3"
+            className="flex flex-col items-center justify-center cursor-pointer space-y-3 upload-label"
           >
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
               <UploadCloudIcon className="w-8 h-8 text-primary" />
@@ -165,7 +165,8 @@ function LocalImageUpload({
               <Button
                 variant="destructive"
                 size="icon"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                className="absolute top-2 right-2"
+                aria-label="Remove uploaded photograph"
                 onClick={handleRemoveImage}
               >
                 <XIcon className="w-4 h-4" />

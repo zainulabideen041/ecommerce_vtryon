@@ -17,6 +17,8 @@ function CommonForm({
   onSubmit,
   buttonText,
   isBtnDisabled,
+  isSubmitting = false,
+  autoCompleteMap = {},
 }) {
   function renderInputsByComponentType(getControlItem) {
     let element = null;
@@ -30,6 +32,7 @@ function CommonForm({
             placeholder={getControlItem.placeholder}
             id={getControlItem.name}
             type={getControlItem.type}
+            autoComplete={autoCompleteMap[getControlItem.name]}
             value={value}
             onChange={(event) =>
               setFormData({
@@ -53,7 +56,10 @@ function CommonForm({
             }
             value={value}
           >
-            <SelectTrigger className="w-full h-11 rounded-xl border-2">
+            <SelectTrigger
+              id={getControlItem.name}
+              className="w-full h-11 rounded-xl border-2"
+            >
               <SelectValue placeholder={getControlItem.label} />
             </SelectTrigger>
             <SelectContent>
@@ -74,7 +80,7 @@ function CommonForm({
           <Textarea
             name={getControlItem.name}
             placeholder={getControlItem.placeholder}
-            id={getControlItem.id}
+            id={getControlItem.name}
             value={value}
             onChange={(event) =>
               setFormData({
@@ -95,6 +101,7 @@ function CommonForm({
             placeholder={getControlItem.placeholder}
             id={getControlItem.name}
             type={getControlItem.type}
+            autoComplete={autoCompleteMap[getControlItem.name]}
             value={value}
             onChange={(event) =>
               setFormData({
@@ -116,7 +123,10 @@ function CommonForm({
       <div className="flex flex-col gap-4">
         {formControls.map((controlItem) => (
           <div className="grid w-full gap-2" key={controlItem.name}>
-            <Label className="text-md font-medium text-foreground">
+            <Label
+              htmlFor={controlItem.name}
+              className="text-md font-medium text-foreground"
+            >
               {controlItem.label}
             </Label>
             {renderInputsByComponentType(controlItem)}
@@ -124,10 +134,10 @@ function CommonForm({
         ))}
       </div>
       <Button
-        disabled={isBtnDisabled}
+        disabled={isBtnDisabled || isSubmitting}
         type="submit"
         className="mt-6 w-full text-lg"
-        loading={isBtnDisabled}
+        loading={isSubmitting}
       >
         {buttonText || "Submit"}
       </Button>

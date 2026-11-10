@@ -1,4 +1,7 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
+import "./storefront.css";
+import "./storefront-motion.css";
+import "./editorial-sections.css";
 import ScrollToTop from "@/components/common/scroll-to-top";
 import AuthLayout from "@/components/auth/layout";
 import AuthLogin from "@/pages/auth/login";
@@ -19,20 +22,43 @@ import ShoppingAccount from "@/pages/shopping-view/account";
 import CheckAuth from "@/components/common/check-auth";
 import UnauthPage from "@/pages/unauth-page";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from "react";
+import { useStorefrontMotion } from "@/hooks/use-storefront-motion";
 import { checkAuth } from "@/store/auth-slice";
 import LoadingScreen from "@/components/common/loading-screen";
 import PaypalReturnPage from "@/pages/shopping-view/paypal-return";
 import PaymentSuccessPage from "@/pages/shopping-view/payment-success";
 import SearchProducts from "@/pages/shopping-view/search";
-import TryOnPage from "@/pages/tryOnPage";
-import YouCamTryOn from "@/pages/YouCamTryOn";
+const TryOnPage = lazy(() => import("@/pages/tryOnPage"));
+const YouCamTryOn = lazy(() => import("@/pages/YouCamTryOn"));
 
 function App() {
+  const location = useLocation();
+  const motionScope = useRef(null);
+  useLayoutEffect(() => {
+    document.documentElement.classList.toggle(
+      "admin-theme",
+      location.pathname.startsWith("/admin"),
+    );
+    document.documentElement.classList.toggle(
+      "storefront-theme",
+      !location.pathname.startsWith("/admin"),
+    );
+    return () =>
+      document.documentElement.classList.remove(
+        "storefront-theme",
+        "admin-theme",
+      );
+  }, [location.pathname]);
   const { user, isAuthenticated, isLoading } = useSelector(
     (state) => state.auth,
   );
   const dispatch = useDispatch();
+  useStorefrontMotion(
+    motionScope,
+    location.pathname,
+    !location.pathname.startsWith("/admin") && !isLoading,
+  );
 
   useEffect(() => {
     dispatch(checkAuth());
@@ -41,7 +67,7 @@ function App() {
   if (isLoading) return <LoadingScreen />;
 
   return (
-    <div className="flex flex-col overflow-hidden min-h-screen">
+    <div ref={motionScope} className="flex flex-col min-h-screen">
       <ScrollToTop />
       <Routes>
         <Route
@@ -90,8 +116,22 @@ function App() {
           }
         >
           <Route path="home" element={<ShoppingHome />} />
-          <Route path="tryon/:id" element={<TryOnPage />} />
-          <Route path="tryon-youcam/:id" element={<YouCamTryOn />} />
+          <Route
+            path="tryon/:id"
+            element={
+              <Suspense fallback={<FittingRoomLoading />}>
+                <TryOnPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="tryon-youcam/:id"
+            element={
+              <Suspense fallback={<FittingRoomLoading />}>
+                <YouCamTryOn />
+              </Suspense>
+            }
+          />
           <Route path="listing" element={<ShoppingListing />} />
           <Route path="checkout" element={<ShoppingCheckout />} />
           <Route path="account" element={<ShoppingAccount />} />
@@ -103,6 +143,20 @@ function App() {
         <Route path="/unauth-page" element={<UnauthPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+    </div>
+  );
+}
+
+function FittingRoomLoading() {
+  return (
+    <div className="store-page fitting-room-loading" role="status">
+      <p className="eyebrow">THE LUXAR FITTING ROOM</p>
+      <h1>Getting your room ready.</h1>
+      <div className="fitting-room-placeholders" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
     </div>
   );
 }

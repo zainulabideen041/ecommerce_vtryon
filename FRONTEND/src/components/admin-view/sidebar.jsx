@@ -1,149 +1,99 @@
+import { NavLink, Link } from "react-router-dom";
 import {
-  BadgeCheck,
   LayoutDashboard,
-  ShoppingBasket,
-  PersonStanding,
-  Shirt,
   ShoppingBag,
+  Package,
+  Shirt,
+  PersonStanding,
+  ArrowUpRight,
 } from "lucide-react";
-import { Fragment } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
-
-const adminSidebarMenuItems = [
+import { Sheet, SheetContent, SheetTitle, SheetDescription } from "../ui/sheet";
+export const adminNavigation = [
   {
-    id: "dashboard",
-    label: "Dashboard",
     path: "/admin/dashboard",
-    icon: <LayoutDashboard />,
+    label: "Overview",
+    icon: LayoutDashboard,
+    section: "The studio",
   },
   {
-    id: "products",
-    label: "Products",
     path: "/admin/products",
-    icon: <ShoppingBasket />,
+    label: "Products",
+    icon: Shirt,
+    section: "Your collection",
   },
   {
-    id: "orders",
-    label: "Orders",
     path: "/admin/orders",
-    icon: <BadgeCheck />,
+    label: "Orders",
+    icon: ShoppingBag,
+    section: "The customer edit",
   },
   {
-    id: "tryoncloth",
-    label: "Tryon Cloths",
     path: "/admin/tryon-cloths",
-    icon: <Shirt />,
+    label: "Try-on garments",
+    icon: Package,
+    section: "The fitting room",
   },
   {
-    id: "tryonmodel",
-    label: "Tryon Models",
     path: "/admin/tryon-models",
-    icon: <PersonStanding />,
+    label: "Try-on models",
+    icon: PersonStanding,
+    section: "The fitting room",
   },
 ];
-
-function MenuItems({ setOpen }) {
-  const navigate = useNavigate();
-  const location = useLocation();
-
+function StudioNavigation({ onClose }) {
   return (
-    <nav className="mt-8 flex-col flex gap-2">
-      {adminSidebarMenuItems.map((menuItem) => {
-        const isActive = location.pathname === menuItem.path;
-
-        return (
-          <div
-            key={menuItem.id}
-            onClick={() => {
-              navigate(menuItem.path);
-              setOpen ? setOpen(false) : null;
-            }}
-            className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-all duration-300 ${
-              isActive
-                ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground hover:scale-102"
-            }`}
-          >
-            <div className={`${isActive ? "text-white" : ""}`}>
-              {menuItem.icon}
-            </div>
-            <span>{menuItem.label}</span>
-          </div>
-        );
-      })}
-    </nav>
+    <>
+      <Link
+        className="admin-brand"
+        to="/admin/dashboard"
+        onClick={onClose}
+        aria-label="Luxar Studio overview"
+      >
+        LUXAR<span>.</span>
+        <small>THE MANAGEMENT STUDIO</small>
+      </Link>
+      <p className="admin-sidebar-label">YOUR WORKSPACE</p>
+      <nav aria-label="Admin navigation">
+        {adminNavigation.map((item, index) => (
+          <NavLink to={item.path} key={item.path} end onClick={onClose}>
+            <item.icon size={18} strokeWidth={1.5} />
+            <span>{item.label}</span>
+            <small>{String(index + 1).padStart(2, "0")}</small>
+          </NavLink>
+        ))}
+      </nav>
+      <div className="admin-sidebar-story">
+        <span aria-hidden="true">&#10035;</span>
+        <p>
+          The other side
+          <br />
+          <em>of good style.</em>
+        </p>
+        <span>CURATE. CREATE. CONNECT.</span>
+        <ArrowUpRight size={24} strokeWidth={1} />
+      </div>
+      <div className="admin-sidebar-bottom">
+        <span />
+        <span>LUXAR STUDIO / ADMIN</span>
+      </div>
+    </>
   );
 }
-
-function AdminSideBar({ open, setOpen }) {
-  const navigate = useNavigate();
-
+export default function AdminSideBar({ open, setOpen }) {
   return (
-    <Fragment>
+    <>
+      <aside className="admin-sidebar">
+        <StudioNavigation />
+      </aside>
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="w-72">
-          <div className="flex flex-col h-full">
-            <SheetHeader className="border-b pb-4">
-              <SheetTitle className="flex items-center gap-3 mt-2">
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-gradient-primary flex items-center justify-center shadow-lg">
-                  <img
-                    src="/logo.png"
-                    alt="Luxar Logo"
-                    className="w-full h-full object-contain p-1"
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                      e.target.nextElementSibling.style.display = "flex";
-                    }}
-                  />
-                  <div className="w-full h-full hidden items-center justify-center">
-                    <ShoppingBag className="h-6 w-6 text-white" />
-                  </div>
-                </div>
-                <div>
-                  <h1 className="text-xl font-display font-bold bg-gradient-primary bg-clip-text text-transparent">
-                    Luxar Admin
-                  </h1>
-                  <p className="text-xs text-muted-foreground font-normal">
-                    Management Panel
-                  </p>
-                </div>
-              </SheetTitle>
-            </SheetHeader>
-            <MenuItems setOpen={setOpen} />
-          </div>
+        <SheetContent side="left" className="admin-mobile-sidebar">
+          <SheetTitle className="sr-only">Luxar Studio navigation</SheetTitle>
+          <SheetDescription className="sr-only">
+            Manage your products, orders and virtual fitting room.
+          </SheetDescription>
+          <StudioNavigation onClose={() => setOpen(false)} />
         </SheetContent>
       </Sheet>
-      <aside className="hidden w-72 flex-col border-r bg-background/50 backdrop-blur-sm p-6 lg:flex">
-        <div
-          onClick={() => navigate("/admin/dashboard")}
-          className="flex cursor-pointer items-center gap-3 group"
-        >
-          <div className="w-14 h-14 rounded-xl overflow-hidden bg-gradient-primary flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
-            <img
-              src="/logo.png"
-              alt="Luxar Logo"
-              className="w-full h-full object-contain p-1.5"
-              onError={(e) => {
-                e.target.style.display = "none";
-                e.target.nextElementSibling.style.display = "flex";
-              }}
-            />
-            <div className="w-full h-full hidden items-center justify-center">
-              <ShoppingBag className="h-7 w-7 text-white" />
-            </div>
-          </div>
-          <div>
-            <h1 className="text-2xl font-display font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Luxar Admin
-            </h1>
-            <p className="text-xs text-muted-foreground">Management Panel</p>
-          </div>
-        </div>
-        <MenuItems />
-      </aside>
-    </Fragment>
+    </>
   );
 }
-
-export default AdminSideBar;

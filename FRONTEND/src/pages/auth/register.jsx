@@ -5,7 +5,7 @@ import { registerUser } from "@/store/auth-slice";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { UserPlus, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const initialState = {
   userName: "",
@@ -43,93 +43,42 @@ function AuthRegister() {
   }
 
   return (
-    <div className="w-full space-y-6 slide-up">
-      {/* Header */}
-      <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary mb-4">
-          <UserPlus className="w-8 h-8 text-white" />
-        </div>
-        <h1 className="text-5xl font-display font-bold tracking-tight text-foreground">
-          Create Account
-        </h1>
-        <p className="text-muted-foreground text-xl mt-2">
-          Join Luxar and start your virtual shopping experience
-        </p>
-      </div>
-
-      {/* Form Card */}
-      <div className="bg-card border border-border rounded-2xl p-8 shadow-lg space-y-6">
-        <CommonForm
-          formControls={registerFormControls}
-          buttonText={isLoading ? "Creating account..." : "Create Account"}
-          formData={formData}
-          setFormData={setFormData}
-          onSubmit={onSubmit}
-          isBtnDisabled={isLoading}
-        />
-
-        {/* Benefits */}
-        <div className="space-y-2 pt-4 border-t border-border">
-          <p className="text-sm font-medium text-muted-foreground mb-3">
-            What you'll get:
-          </p>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-              <span className="text-muted-foreground">
-                AI-powered virtual try-on
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-              <span className="text-muted-foreground">
-                Personalized recommendations
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-              <span className="text-muted-foreground">
-                Exclusive deals and offers
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-card text-muted-foreground">
-              Already have an account?
-            </span>
-          </div>
-        </div>
-
-        {/* Login Link */}
-        <Link
-          to="/auth/login"
-          className="group flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border-2 border-border hover:border-primary transition-all duration-300 font-medium"
-        >
-          Sign in instead
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+    <div className="auth-content slide-up">
+      <p className="eyebrow">A WARDROBE, CONSIDERED</p>
+      <h1>
+        A little space.
+        <br />
+        <em>All yours.</em>
+      </h1>
+      <p className="auth-introduction">
+        Create your Luxar account. Keep your orders and delivery details in one
+        place.
+      </p>
+      <CommonForm
+        formControls={registerFormControls}
+        buttonText={isLoading ? "Creating account..." : "Create account"}
+        formData={formData}
+        setFormData={setFormData}
+        onSubmit={onSubmit}
+        isBtnDisabled={isLoading}
+        isSubmitting={isLoading}
+        autoCompleteMap={{
+          userName: "nickname",
+          email: "email",
+          password: "new-password",
+        }}
+      />
+      <div className="auth-switch-row">
+        <span>Already part of Luxar?</span>
+        <Link className="auth-switch" to="/auth/login">
+          Sign in <ArrowRight size={16} />
         </Link>
       </div>
-
-      {/* Terms */}
-      <p className="text-center text-xs text-muted-foreground">
-        By creating an account, you agree to our{" "}
-        <a href="#" className="text-primary hover:underline">
-          Terms of Service
-        </a>{" "}
-        and{" "}
-        <a href="#" className="text-primary hover:underline">
-          Privacy Policy
-        </a>
+      <p className="auth-footnote">
+        Your style, your choices. Explore the collection and picture each piece
+        on you in our virtual fitting room.
       </p>
     </div>
   );
 }
-
 export default AuthRegister;

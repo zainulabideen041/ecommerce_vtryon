@@ -1,145 +1,209 @@
-import { Card, CardContent, CardFooter } from "../ui/card";
-import { Button } from "../ui/button";
+import { useEffect, useRef, useState } from "react";
+import { ArrowUpRight, Check, Plus } from "lucide-react";
 import { brandOptionsMap, categoryOptionsMap } from "@/config";
-import { Badge } from "../ui/badge";
-import { ShoppingCart, Eye } from "lucide-react";
-import { useState } from "react";
+import { imageDelivery } from "@/lib/image-delivery";
+import { gsap, useGSAP } from "@/hooks/use-storefront-motion";
+import { useReducedMotion } from "@/hooks/use-media-query";
+import { useProductRail } from "./product-rail";
 
-function ShoppingProductTile({
+export default function ShoppingProductTile({
   product,
   handleGetProductDetails,
   handleAddtoCart,
 }) {
-  const [isHovered, setIsHovered] = useState(false);
-  const discount =
-    product?.salePrice > 0
-      ? Math.round(((product.price - product.salePrice) / product.price) * 100)
-      : 0;
-
+  const root = useRef(null);
+  const photo = useRef(null);
+  const rail = useProductRail();
+  const [focused, setFocused] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [alternateLoaded, setAlternateLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [added, setAdded] = useState(false);
+  const timer = useRef(null);
+  const reduced = useReducedMotion();
+  const active = rail ? rail.activeId === product._id : focused;
+  const sale = product.salePrice > 0;
+  const soldOut =
+    product.totalStock === 0 || product.availability === "sold-out";
+  const alternate = product.images?.find(
+    (image) => image.url !== product.image,
+  );
+  const activate = () => (rail ? rail.activate(product._id) : setFocused(true));
+  const release = () => (rail ? rail.release(product._id) : setFocused(false));
+  useGSAP(
+    () => {
+      gsap.to(photo.current, {
+        y: reduced ? 0 : active ? -3 : 0,
+        scale: reduced ? 1 : active ? 1.035 : 1,
+        rotationY: reduced ? 0 : active ? 2 : 0,
+        duration: reduced ? 0 : 0.7,
+        ease: "power3.out",
+        overwrite: "auto",
+      });
+    },
+    { scope: root, dependencies: [active, reduced] },
+  );
+  useEffect(() => () => clearTimeout(timer.current), []);
+  async function add() {
+    if (pending) return;
+    setPending(true);
+    try {
+      const success = await handleAddtoCart(product._id, product.totalStock);
+      if (success) {
+        setAdded(true);
+        clearTimeout(timer.current);
+        timer.current = setTimeout(() => setAdded(false), 1800);
+      }
+    } finally {
+      setPending(false);
+    }
+  }
   return (
-    <Card
-      className="group w-full max-w-sm mx-auto overflow-hidden border border-border/60 hover:border-primary/40 transition-all duration-300 hover:shadow-xl cursor-pointer bg-card rounded-xl"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+    <article
+      ref={root}
+      className={`garment-card ${active ? "is-forward" : ""}`}
+      onPointerEnter={(event) => {
+        if (event.pointerType === "mouse") activate();
+      }}
+      onPointerLeave={(event) => {
+        if (
+          event.pointerType === "mouse" &&
+          !root.current?.contains(document.activeElement)
+        )
+          release();
+      }}
+      onFocusCapture={activate}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) release();
+      }}
     >
-      {/* Image */}
-      <div
-        onClick={() => handleGetProductDetails(product?._id)}
-        className="relative overflow-hidden bg-muted/30"
+      <button
+        className="garment-photo"
+        onClick={() => handleGetProductDetails(product._id)}
+        aria-label={`Explore ${product.title}`}
       >
-        <div className="relative aspect-[3/4] overflow-hidden">
-          <img
-            src={product?.image}
-            alt={product?.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-
-          {/* Dark overlay */}
-          <div
-            className={`absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent transition-opacity duration-300 ${
-              isHovered ? "opacity-100" : "opacity-0"
-            }`}
-          />
-
-          {/* Quick View */}
-          <div
-            className={`absolute inset-0 flex items-end justify-center pb-5 transition-all duration-300 ${
-              isHovered
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-3"
-            }`}
-          >
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleGetProductDetails(product?._id);
-              }}
-              className="flex items-center gap-1.5 text-xs font-medium text-white bg-white/20 backdrop-blur-md border border-white/30 px-4 py-2 rounded-full hover:bg-white/30 transition-all"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              Quick View
-            </button>
-          </div>
-
-          {/* Badges */}
-          <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
-            {product?.totalStock === 0 ? (
-              <Badge className="text-[10px] px-2 py-0.5 bg-foreground/80 text-background font-medium rounded-sm">
-                Sold Out
-              </Badge>
-            ) : product?.totalStock < 10 ? (
-              <Badge className="text-[10px] px-2 py-0.5 bg-amber-500 text-white font-medium rounded-sm">
-                Only {product.totalStock} left
-              </Badge>
-            ) : null}
-          </div>
-
-          {/* Discount badge */}
-          {discount > 0 && (
-            <div className="absolute top-2.5 right-2.5 w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
-              <span className="text-white text-[10px] font-bold leading-tight text-center">
-                {discount}%<br />
-                off
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Info */}
-      <CardContent className="px-4 pt-3 pb-2 space-y-1.5">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-display font-semibold text-[15px] leading-snug line-clamp-1 group-hover:text-primary transition-colors flex-1">
-            {product?.title}
-          </h3>
-        </div>
-        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-          <span className="px-2 py-0.5 border border-border rounded-sm">
-            {categoryOptionsMap[product?.category]}
-          </span>
-          <span className="px-2 py-0.5 border border-border rounded-sm">
-            {brandOptionsMap[product?.brand]}
-          </span>
-        </div>
-
-        <div className="flex items-baseline gap-2 pt-0.5">
-          {product?.salePrice > 0 ? (
+        <span
+          ref={photo}
+          className={`garment-frame ${loaded ? "is-loaded" : ""}`}
+        >
+          {!failed ? (
             <>
-              <span className="text-lg font-bold text-primary font-display">
-                ${product.salePrice}
-              </span>
-              <span className="text-xs text-muted-foreground line-through">
-                ${product.price}
-              </span>
+              <img
+                {...imageDelivery(product.image)}
+                sizes="(max-width: 767px) 44vw, (max-width: 1100px) 42vw, 24vw"
+                alt={product.title}
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+                onLoad={() => setLoaded(true)}
+                onError={(event) => {
+                  if (
+                    product.thumbnail &&
+                    !event.currentTarget.dataset.fallback
+                  ) {
+                    event.currentTarget.dataset.fallback = "true";
+                    event.currentTarget.removeAttribute("srcset");
+                    event.currentTarget.src = product.thumbnail;
+                    return;
+                  }
+                  setFailed(true);
+                  setLoaded(true);
+                }}
+              />
+              {alternate && (active || alternateLoaded) && (
+                <img
+                  onLoad={() => setAlternateLoaded(true)}
+                  className={`garment-alternate-photo ${alternateLoaded ? "is-ready" : ""}`}
+                  {...imageDelivery(alternate.url)}
+                  sizes="(max-width: 767px) 44vw, 24vw"
+                  alt=""
+                  draggable={false}
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                  }}
+                />
+              )}
             </>
           ) : (
-            <span className="text-lg font-bold text-primary font-display">
-              ${product?.price}
-            </span>
+            <span className="garment-image-fallback">{product.title}</span>
           )}
-        </div>
-      </CardContent>
-
-      <CardFooter className="px-4 pb-4 pt-0">
-        {product?.totalStock === 0 ? (
-          <Button className="w-full h-9 text-xs" disabled variant="outline">
-            Out Of Stock
-          </Button>
-        ) : (
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAddtoCart(product?._id, product?.totalStock);
-            }}
-            className="w-full h-9 text-xs gap-2 bg-gradient-primary hover:opacity-90 shadow-sm transition-all"
-          >
-            <ShoppingCart className="w-3.5 h-3.5" />
-            Add to Cart
-          </Button>
+        </span>
+        {(sale || soldOut) && (
+          <span className="garment-badge">
+            {soldOut ? "SOLD OUT" : "SPECIAL PRICE"}
+          </span>
         )}
-      </CardFooter>
-    </Card>
+        <span className="garment-inspect">
+          EXPLORE THE PIECE <ArrowUpRight size={16} />
+        </span>
+        <span className="garment-photo-number" aria-hidden="true">
+          L.
+        </span>
+      </button>
+      <div className="garment-meta">
+        <p className="garment-category">
+          {product.categoryLabel ||
+            categoryOptionsMap[product.category] ||
+            product.category}{" "}
+          /{" "}
+          {product.brandLabel ||
+            brandOptionsMap[product.brand] ||
+            product.brand}
+        </p>
+        <h3>
+          <button onClick={() => handleGetProductDetails(product._id)}>
+            {product.title}
+          </button>
+        </h3>
+        <div className="garment-bottom">
+          <div className="garment-price">
+            <span>
+              $
+              {(sale ? product.salePrice : product.price)?.toLocaleString(
+                "en-US",
+              )}
+            </span>
+            {sale && <del>${product.price?.toLocaleString("en-US")}</del>}
+            {product.totalStock > 0 && product.totalStock < 10 && (
+              <small>{product.totalStock} left</small>
+            )}
+          </div>
+          <button
+            className={`garment-add ${added ? "is-added" : ""}`}
+            disabled={soldOut || pending}
+            onClick={
+              product.localPreview
+                ? () => handleGetProductDetails(product._id)
+                : add
+            }
+            aria-label={
+              product.localPreview
+                ? `Inspect ${product.title}, local catalog preview`
+                : added
+                  ? `${product.title} added to your bag`
+                  : `Add ${product.title} to bag`
+            }
+          >
+            <span className="sr-only" role="status">
+              {product.localPreview
+                ? "Inspect local preview"
+                : pending
+                  ? "Adding…"
+                  : added
+                    ? "Added to bag"
+                    : "Add to bag"}
+            </span>
+            {product.localPreview ? (
+              <ArrowUpRight size={18} />
+            ) : added ? (
+              <Check size={18} />
+            ) : (
+              <Plus size={18} />
+            )}
+          </button>
+        </div>
+      </div>
+    </article>
   );
 }
-
-export default ShoppingProductTile;

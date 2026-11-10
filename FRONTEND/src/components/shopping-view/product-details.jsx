@@ -1,315 +1,507 @@
-import { StarIcon, ShoppingCart, Sparkles, X } from "lucide-react";
-import { Avatar, AvatarFallback } from "../ui/avatar";
-import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
-import { Separator } from "../ui/separator";
-import { Input } from "../ui/input";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  ArrowUpRight,
+  Check,
+  ChevronDown,
+  ShoppingBag,
+  Star,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "../ui/dialog";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
-import { useToast } from "../ui/use-toast";
 import { setProductDetails } from "@/store/shop/products-slice";
-import { Label } from "../ui/label";
-import StarRatingComponent from "../common/star-rating";
-import { useEffect, useState } from "react";
 import { addReview, getReviews } from "@/store/shop/review-slice";
-import { useNavigate } from "react-router-dom";
+import { useToast } from "../ui/use-toast";
+import { brandOptionsMap, categoryOptionsMap } from "@/config";
+import { gsap, useGSAP } from "@/hooks/use-storefront-motion";
+import { useReducedMotion } from "@/hooks/use-media-query";
+import GarmentGallery from "./garment-gallery";
 
-function ProductDetailsDialog({ open, setOpen, productDetails }) {
+export default function ProductDetailsDialog({
+  open,
+  setOpen,
+  productDetails: product,
+}) {
+  const [selection, setSelection] = useState({ productId: null, values: {} });
   const [reviewMsg, setReviewMsg] = useState("");
   const [rating, setRating] = useState(0);
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const root = useRef(null);
+  const opener = useRef(null);
+  const addedTimer = useRef(null);
+  const reduceMotion = useReducedMotion();
   const dispatch = useDispatch();
-  const { user } = useSelector((s) => s.auth);
-  const { cartItems } = useSelector((s) => s.shopCart);
-  const { reviews } = useSelector((s) => s.shopReview);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useSelector((state) => state.auth);
+  const { cartItems } = useSelector((state) => state.shopCart);
+  const { reviews, isLoading: reviewsLoading } = useSelector(
+    (state) => state.shopReview,
+  );
 
-  function handleRatingChange(r) {
-    setRating(r);
+  useEffect(() => {
+    if (product?._id && open) dispatch(getReviews(product._id));
+    setAdded(false);
+    return () => clearTimeout(addedTimer.current);
+  }, [product?._id, open, dispatch]);
+
+  useGSAP(
+    () => {
+      if (!open || !root.current || reduceMotion) return;
+      gsap.fromTo(
+        root.current.querySelectorAll(
+          ".product-heading > *, .product-purchase-panel, .product-description",
+        ),
+        { y: 18, opacity: 0.25 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.6,
+          stagger: 0.045,
+          ease: "power3.out",
+          clearProps: "transform,opacity",
+        },
+      );
+    },
+    {
+      scope: root,
+      dependencies: [open, product?._id, reduceMotion],
+      revertOnUpdate: true,
+    },
+  );
+
+  function close() {
+    setOpen(false);
+    dispatch(setProductDetails());
+    setReviewMsg("");
+    setRating(0);
   }
 
-  function handleAddToCart(productId, totalStock) {
-    const existing = (cartItems.items || []).find(
-      (i) => i.productId === productId,
+  function add() {
+    if (product?.localPreview) return;
+    if (!user) {
+      close();
+      toast({ title: "Sign in to save this piece to your bag" });
+      navigate("/auth/login");
+      return;
+    }
+    const existing = (cartItems?.items || []).find(
+      (item) => item.productId === product._id,
     );
-    if (existing && existing.quantity + 1 > totalStock) {
+    if (existing && existing.quantity + 1 > product.totalStock) {
       toast({
         title: `Only ${existing.quantity} can be added`,
         variant: "destructive",
       });
       return;
     }
-    dispatch(addToCart({ userId: user?.id, productId, quantity: 1 })).then(
-      (d) => {
-        if (d?.payload?.success) {
-          dispatch(fetchCartItems(user?.id));
-          toast({ title: "Added to cart" });
-        }
-      },
-    );
-  }
-
-  function handleDialogClose() {
-    setOpen(false);
-    dispatch(setProductDetails());
-    setRating(0);
-    setReviewMsg("");
-  }
-
-  function handleAddReview() {
+    setAdding(true);
     dispatch(
-      addReview({
-        productId: productDetails?._id,
-        userId: user?.id,
-        userName: user?.userName,
-        reviewMessage: reviewMsg,
-        reviewValue: rating,
-      }),
-    ).then((d) => {
-      if (d.payload.success) {
-        setRating(0);
-        setReviewMsg("");
-        dispatch(getReviews(productDetails?._id));
-        toast({ title: "Review submitted!" });
-      }
+      addToCart({ userId: user.id, productId: product._id, quantity: 1 }),
+    ).then((result) => {
+      setAdding(false);
+      if (result?.payload?.success) {
+        dispatch(fetchCartItems(user.id));
+        setAdded(true);
+        addedTimer.current = setTimeout(() => setAdded(false), 2000);
+        toast({
+          title: "Added to your bag",
+          description: "A new piece for your wardrobe.",
+        });
+      } else
+        toast({
+          title: "Couldn't add this piece. Please try again.",
+          variant: "destructive",
+        });
     });
   }
 
-  useEffect(() => {
-    if (productDetails !== null) dispatch(getReviews(productDetails?._id));
-  }, [productDetails]);
+  function review(event) {
+    event.preventDefault();
+    setSubmitting(true);
+    dispatch(
+      addReview({
+        productId: product._id,
+        userId: user.id,
+        userName: user.userName,
+        reviewMessage: reviewMsg,
+        reviewValue: rating,
+      }),
+    ).then((result) => {
+      setSubmitting(false);
+      if (result?.payload?.success) {
+        setRating(0);
+        setReviewMsg("");
+        dispatch(getReviews(product._id));
+        toast({ title: "Review submitted" });
+      } else
+        toast({
+          title: result?.payload?.message || "Couldn't submit your review",
+          variant: "destructive",
+        });
+    });
+  }
 
-  const averageReview =
-    reviews?.length > 0
-      ? reviews.reduce((s, r) => s + r.reviewValue, 0) / reviews.length
-      : 0;
-
-  const discount =
-    productDetails?.salePrice > 0
-      ? Math.round(
-          ((productDetails.price - productDetails.salePrice) /
-            productDetails.price) *
-            100,
-        )
-      : 0;
+  const average = reviews?.length
+    ? reviews.reduce((sum, item) => sum + item.reviewValue, 0) / reviews.length
+    : 0;
+  const variants = product?.variants || [];
+  const defaultVariant =
+    variants.find((variant) => variant.available) || variants[0];
+  const optionNames = [
+    ...new Set(
+      variants.flatMap((variant) => Object.keys(variant.options || {})),
+    ),
+  ];
+  const activeOptions =
+    selection.productId === product?._id
+      ? selection.values
+      : defaultVariant?.options || {};
+  const selectedVariant = variants.find((variant) =>
+    optionNames.every((name) => variant.options[name] === activeOptions[name]),
+  );
+  const price = (
+    selectedVariant?.price ??
+    (product?.salePrice > 0 ? product.salePrice : product?.price)
+  )?.toLocaleString("en-US", { maximumFractionDigits: 2 });
+  const compareAt = selectedVariant?.compareAtPrice;
+  const soldOut = variants.length
+    ? !selectedVariant?.available
+    : product?.totalStock === 0 || product?.availability === "sold-out";
+  const buttonText = product?.localPreview
+    ? "Local catalog preview"
+    : soldOut
+      ? "Out of stock"
+      : adding
+        ? "Adding\u2026"
+        : added
+          ? "In your bag"
+          : "Add to bag";
+  const ActionIcon = added ? Check : ShoppingBag;
 
   return (
-    <Dialog open={open} onOpenChange={handleDialogClose}>
-      <DialogContent className="max-w-[95vw] md:max-w-[88vw] lg:max-w-[1100px] h-[88vh] p-0 overflow-hidden border border-border/60 shadow-2xl rounded-2xl">
+    <Dialog
+      open={open}
+      onOpenChange={(value) => {
+        if (!value) close();
+      }}
+    >
+      <DialogContent
+        ref={root}
+        className="product-dialog"
+        aria-describedby="product-description"
+        onOpenAutoFocus={() => {
+          opener.current = document.activeElement;
+        }}
+        onCloseAutoFocus={(event) => {
+          if (opener.current?.isConnected) {
+            event.preventDefault();
+            opener.current.focus();
+          }
+        }}
+      >
         <DialogTitle className="sr-only">
-          {productDetails?.title || "Product Details"}
+          {product?.title || "Product details"}
         </DialogTitle>
-
-        <div className="grid md:grid-cols-2 h-full overflow-hidden">
-          {/* Left — Image */}
-          <div className="relative bg-muted/20 flex items-center justify-center overflow-hidden">
-            {/* Subtle gradient bg */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-gold/5" />
-
-            <img
-              src={productDetails?.image}
-              alt={productDetails?.title}
-              className="relative max-w-full max-h-full object-contain p-8 drop-shadow-xl"
-            />
-
-            {/* Badges */}
-            {discount > 0 && (
-              <div className="absolute top-4 left-4 min-w-[52px] h-[52px] rounded-full bg-gradient-primary flex flex-col items-center justify-center shadow-lg">
-                <span className="text-white text-[11px] font-bold leading-none">
-                  {discount}%
-                </span>
-                <span className="text-white/80 text-[9px]">OFF</span>
-              </div>
-            )}
-            {productDetails?.totalStock === 0 && (
-              <div className="absolute top-4 left-4 bg-foreground/80 text-background text-[11px] font-semibold px-3 py-1 rounded-sm tracking-wide">
-                SOLD OUT
-              </div>
-            )}
-          </div>
-
-          {/* Right — Details */}
-          <div className="flex flex-col h-full overflow-y-auto">
-            {/* Header sticky */}
-            <div className="px-7 pt-6 pb-4 border-b border-border/50">
-              <h1 className="font-display text-3xl md:text-4xl font-semibold leading-tight text-foreground mb-2">
-                {productDetails?.title}
-              </h1>
-
-              {/* Rating row */}
-              <div className="flex items-center gap-2 mt-2">
-                <div className="flex items-center gap-0.5">
-                  <StarRatingComponent rating={averageReview} />
+        <DialogDescription className="sr-only" id="product-description">
+          Explore the garment photographs, inspect the price and availability,
+          or add the piece to your bag.
+        </DialogDescription>
+        {product && (
+          <>
+            <div className="product-detail-layout">
+              <GarmentGallery key={product._id} product={product} />
+              <div className="product-info">
+                <div className="product-heading">
+                  <p className="eyebrow">
+                    {product.taxonomy?.name ||
+                      product.categoryLabel ||
+                      categoryOptionsMap[product.category]}{" "}
+                    / {product.brandLabel || brandOptionsMap[product.brand]}
+                  </p>
+                  <h1>{product.title}</h1>
+                  <p className="review-count">
+                    {product.localPreview
+                      ? `${product.reviewSummary?.rating || 0} / 5 \u00b7 ${product.reviewSummary?.count || 0} source ratings`
+                      : reviewsLoading
+                        ? "Loading the conversation…"
+                        : reviews?.length
+                          ? `${average.toFixed(1)} / 5 · ${reviews.length} reviews`
+                          : "A new piece to make your own"}
+                  </p>
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {averageReview.toFixed(1)} · {reviews?.length || 0} reviews
-                </span>
-              </div>
-            </div>
-
-            <div className="px-7 py-4 space-y-5 flex-1">
-              {/* Description */}
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {productDetails?.description}
-              </p>
-
-              {/* Price panel */}
-              <div className="flex items-center gap-6 px-5 py-4 rounded-xl bg-muted/30 border border-border/50">
-                {productDetails?.salePrice > 0 ? (
-                  <>
-                    <div>
-                      <span className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                        Was
-                      </span>
-                      <p className="text-lg text-muted-foreground line-through font-display">
-                        ${productDetails.price}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-[11px] text-gold-dark uppercase tracking-wide font-semibold">
-                        Now
-                      </span>
-                      <p className="text-3xl font-bold text-primary font-display">
-                        ${productDetails.salePrice}
-                      </p>
-                    </div>
-                    <div className="ml-auto px-3 py-1.5 bg-gold/15 border border-gold/30 rounded-lg text-center">
-                      <span className="text-gold-dark text-xs font-bold block">
-                        Save
-                      </span>
-                      <span className="text-gold-dark font-bold text-sm">
-                        $
-                        {(
-                          productDetails.price - productDetails.salePrice
-                        ).toFixed(2)}
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <div>
-                    <span className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                      Price
-                    </span>
-                    <p className="text-3xl font-bold text-primary font-display">
-                      ${productDetails?.price}
-                    </p>
+                <div className="product-purchase-panel">
+                  <div className="detail-price">
+                    <span>${price}</span>
+                    {product.salePrice > 0 && (
+                      <del>${product.price?.toLocaleString("en-US")}</del>
+                    )}
                   </div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="space-y-2.5">
-                {productDetails?.totalStock === 0 ? (
-                  <Button className="w-full h-11" disabled>
-                    Out of Stock
-                  </Button>
-                ) : (
-                  <Button
-                    className="w-full h-11 bg-gradient-primary hover:opacity-90 shadow-md transition-all gap-2"
-                    onClick={() =>
-                      handleAddToCart(
-                        productDetails?._id,
-                        productDetails?.totalStock,
-                      )
-                    }
-                  >
-                    <ShoppingCart className="h-4 w-4" />
-                    Add to Cart
-                  </Button>
-                )}
-                <Button
-                  className="w-full h-11 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:opacity-90 text-white shadow-md transition-all gap-2"
-                  onClick={() => navigate(`/shop/tryon/${productDetails?._id}`)}
-                >
-                  ✦ Virtual Try-On
-                </Button>
-                <Button
-                  className="w-full h-11 bg-gradient-to-r from-violet-700 to-rose-600 hover:opacity-90 text-white shadow-md transition-all gap-2"
-                  onClick={() =>
-                    navigate(`/shop/tryon-youcam/${productDetails?._id}`)
-                  }
-                >
-                  <Sparkles className="h-4 w-4" />
-                  Virtual Try-On PRO (90% Accurate)
-                </Button>
-              </div>
-
-              <Separator className="opacity-50" />
-
-              {/* Reviews */}
-              <div>
-                <h2 className="font-display text-xl font-semibold mb-3 flex items-center gap-2">
-                  <StarIcon className="h-5 w-5 fill-gold text-gold" />
-                  Customer Reviews
-                </h2>
-
-                <div className="space-y-3 max-h-[180px] overflow-y-auto pr-1 mb-4">
-                  {reviews?.length > 0 ? (
-                    reviews.map((r, i) => (
-                      <div
-                        key={i}
-                        className="flex gap-3 p-3 bg-muted/20 rounded-lg"
-                      >
-                        <Avatar className="w-8 h-8 shrink-0">
-                          <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
-                            {r.userName?.[0]?.toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-semibold truncate">
-                              {r.userName}
-                            </span>
-                            <StarRatingComponent rating={r.reviewValue} />
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                            {r.reviewMessage}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No reviews yet — be the first!
+                  {compareAt > (selectedVariant?.price || 0) && (
+                    <p className="catalog-source-note">
+                      Source comparison price:{" "}
+                      <del>${compareAt.toFixed(2)}</del>
                     </p>
                   )}
-                </div>
-
-                {/* Add review */}
-                <div className="p-4 bg-muted/20 rounded-xl space-y-3 border border-border/40">
-                  <Label className="text-sm font-semibold">
-                    Write a Review
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
-                      Rating:
-                    </span>
-                    <StarRatingComponent
-                      rating={rating}
-                      handleRatingChange={handleRatingChange}
-                    />
-                  </div>
-                  <Input
-                    value={reviewMsg}
-                    onChange={(e) => setReviewMsg(e.target.value)}
-                    placeholder="Share your experience…"
-                    className="h-10 text-sm"
-                  />
-                  <Button
-                    onClick={handleAddReview}
-                    disabled={!reviewMsg.trim() || rating === 0}
-                    className="w-full h-9 text-sm"
+                  {!!optionNames.length && (
+                    <div className="product-variant-selectors">
+                      {optionNames.map((name) => (
+                        <label key={name}>
+                          {name}
+                          <select
+                            value={activeOptions[name] || ""}
+                            onChange={(event) =>
+                              setSelection({
+                                productId: product._id,
+                                values: {
+                                  ...activeOptions,
+                                  [name]: event.target.value,
+                                },
+                              })
+                            }
+                          >
+                            {[
+                              ...new Set(
+                                variants
+                                  .map((variant) => variant.options[name])
+                                  .filter(Boolean),
+                              ),
+                            ].map((value) => (
+                              <option value={value} key={value}>
+                                {value}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                  {selectedVariant?.sku && (
+                    <p className="catalog-source-note">
+                      SKU {selectedVariant.sku}
+                    </p>
+                  )}
+                  <p className={`stock-note ${soldOut ? "is-sold-out" : ""}`}>
+                    <span aria-hidden="true" />
+                    {soldOut
+                      ? variants.length && !selectedVariant
+                        ? "This combination is unavailable"
+                        : "Currently out of stock"
+                      : product.totalStock < 10
+                        ? `A limited find — ${product.totalStock} remaining`
+                        : "Available for your wardrobe"}
+                  </p>
+                  <button
+                    className="product-add-primary"
+                    onClick={add}
+                    disabled={product.localPreview || soldOut || adding}
                   >
-                    Submit Review
-                  </Button>
+                    <ActionIcon size={17} />
+                    <span role="status">{buttonText}</span>
+                    <span className="purchase-arrow" aria-hidden="true">
+                      <ArrowUpRight size={17} />
+                    </span>
+                  </button>
+                  {product.localPreview && (
+                    <p className="catalog-preview-product-note">
+                      Local dataset preview. These items are not imported into
+                      the store database and cannot be purchased here.
+                      Availability and prices reflect the supplied snapshot.
+                    </p>
+                  )}
+                  <p className="product-sizing-note">
+                    For sizing guidance,{" "}
+                    <a href="mailto:admin@myntrixers.com">ask our team</a>.
+                  </p>
                 </div>
+                <p className="product-description">{product.description}</p>
+                <div className="fitting-room-invitation">
+                  <span className="fitting-invite-mark" aria-hidden="true">
+                    L.
+                  </span>
+                  <div>
+                    <p className="eyebrow">THE VIRTUAL FITTING ROOM</p>
+                    <p>Picture it on you.</p>
+                    <Link onClick={close} to={`/shop/tryon/${product._id}`}>
+                      Try this piece <ArrowUpRight size={15} />
+                    </Link>
+                  </div>
+                  <Link
+                    className="secondary-tryon"
+                    onClick={close}
+                    to={`/shop/tryon-youcam/${product._id}`}
+                  >
+                    Pro
+                  </Link>
+                </div>
+                <details className="detail-disclosure" open>
+                  <summary>
+                    Fit & garment information <ChevronDown size={15} />
+                  </summary>
+                  <div>
+                    {product.localPreview ? (
+                      <>
+                        <dl className="catalog-attributes">
+                          {[
+                            "fabric",
+                            "material",
+                            "fit",
+                            "length",
+                            "pattern",
+                            "neckline",
+                            "care",
+                            "care_instructions",
+                            "sizing_notes",
+                          ]
+                            .filter((key) => product.attributes?.[key])
+                            .map((key) => (
+                              <div key={key}>
+                                <dt>{key.replaceAll("_", " ")}</dt>
+                                <dd>{product.attributes[key]}</dd>
+                              </div>
+                            ))}
+                        </dl>
+                        <p className="catalog-source-note">
+                          Taxonomy: {product.taxonomy?.fullPath}
+                        </p>
+                        <p className="catalog-source-note">
+                          Supplier details may differ from the description.
+                          Verify care and fit before purchasing from the source.
+                        </p>
+                      </>
+                    ) : (
+                      <p>
+                        Explore the full silhouette, then bring the detail views
+                        forward for a closer look. For the right fit, contact
+                        our team about this piece before you order.
+                      </p>
+                    )}
+                    <a className="text-link" href="mailto:admin@myntrixers.com">
+                      Ask about this piece <ArrowUpRight size={14} />
+                    </a>
+                  </div>
+                </details>
+                <section className="reviews-section">
+                  <div className="review-heading">
+                    <p className="eyebrow">THE CONVERSATION</p>
+                    <h2>Worn your way.</h2>
+                  </div>
+                  {product.localPreview ? (
+                    <p className="review-count">
+                      Only aggregate ratings are supplied by the source catalog.
+                      Individual customer reviews are not included.
+                    </p>
+                  ) : reviews?.length ? (
+                    reviews.map((item) => (
+                      <article className="review-item" key={item._id}>
+                        <div>
+                          <strong>{item.userName}</strong>
+                          <span>
+                            <Star size={11} fill="currentColor" />{" "}
+                            {item.reviewValue} / 5
+                          </span>
+                        </div>
+                        <p>{item.reviewMessage}</p>
+                      </article>
+                    ))
+                  ) : (
+                    <p className="review-count">
+                      No reviews yet. Share your thoughts after your purchase.
+                    </p>
+                  )}
+                  {product.localPreview ? (
+                    <p className="catalog-source-note">
+                      Source: Livostyle open data. Updated{" "}
+                      {new Date(product.source.updatedAt).toLocaleDateString(
+                        "en-US",
+                        { timeZone: "UTC" },
+                      )}
+                      .
+                    </p>
+                  ) : user ? (
+                    <details className="review-compose">
+                      <summary>
+                        Write a review <PlusMark />
+                      </summary>
+                      <form className="review-form" onSubmit={review}>
+                        <label htmlFor="garment-review">Your review</label>
+                        <div
+                          className="rating-buttons"
+                          role="group"
+                          aria-label="Your rating"
+                        >
+                          {[1, 2, 3, 4, 5].map((number) => (
+                            <button
+                              type="button"
+                              key={number}
+                              onClick={() => setRating(number)}
+                              aria-label={`${number} star${number > 1 ? "s" : ""}`}
+                              aria-pressed={rating === number}
+                            >
+                              <Star
+                                size={20}
+                                fill={
+                                  rating >= number ? "currentColor" : "none"
+                                }
+                              />
+                            </button>
+                          ))}
+                        </div>
+                        <textarea
+                          id="garment-review"
+                          value={reviewMsg}
+                          onChange={(event) => setReviewMsg(event.target.value)}
+                          placeholder="How did you wear it?"
+                          rows={3}
+                        />
+                        <button
+                          type="submit"
+                          disabled={!reviewMsg.trim() || !rating || submitting}
+                        >
+                          {submitting ? "Submitting…" : "Submit review"}
+                        </button>
+                      </form>
+                    </details>
+                  ) : (
+                    <Link
+                      onClick={close}
+                      className="text-link"
+                      to="/auth/login"
+                    >
+                      Sign in to write a review <ArrowUpRight size={15} />
+                    </Link>
+                  )}
+                </section>
               </div>
             </div>
-          </div>
-        </div>
+            <div className="product-purchase-dock">
+              <div>
+                <span className="eyebrow">YOUR NEXT FAVOURITE</span>
+                <strong>${price}</strong>
+              </div>
+              <button
+                onClick={add}
+                disabled={product.localPreview || soldOut || adding}
+              >
+                <ActionIcon size={17} />
+                {buttonText}
+              </button>
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
 }
 
-export default ProductDetailsDialog;
+function PlusMark() {
+  return <span aria-hidden="true">+</span>;
+}

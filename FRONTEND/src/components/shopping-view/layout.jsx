@@ -1,13 +1,19 @@
 import { Outlet } from "react-router-dom";
 import ShoppingHeader from "./header";
+import { LocalCatalogNotice } from "./local-catalog";
 import ShoppingFooter from "./footer";
 
 function ShoppingLayout() {
   return (
-    <div className="flex flex-col min-h-screen overflow-x-hidden">
+    <div className="storefront flex flex-col min-h-screen">
       {/* common header */}
       <ShoppingHeader />
-      <main className="flex flex-col w-full flex-1">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex flex-col w-full flex-1"
+      >
+        <LocalCatalogNotice />
         <Outlet />
       </main>
       {/* footer */}

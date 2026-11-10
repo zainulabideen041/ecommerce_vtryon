@@ -1,127 +1,182 @@
-import { FileIcon, UploadCloudIcon, XIcon } from "lucide-react";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { useEffect, useRef } from "react";
-import { Button } from "../ui/button";
+import { useEffect, useId, useRef, useState } from "react";
+import { UploadCloud, X, Check, RefreshCw } from "lucide-react";
 import axios from "axios";
-import { Skeleton } from "../ui/skeleton";
-
-function ProductImageUpload({
-  title,
+import { API_BASE_URL } from "@/config";
+export default function ProductImageUpload({
+  title = "Choose your photograph",
   imageFile,
   setImageFile,
   imageLoadingState,
   uploadedImageUrl,
   setUploadedImageUrl,
   setImageLoadingState,
-  isEditMode,
-  isCustomStyling = false,
+  isEditMode = false,
 }) {
-  const inputRef = useRef(null);
-
-  function handleImageFileChange(event) {
-    const selectedFile = event.target.files?.[0];
-
-    if (selectedFile) setImageFile(selectedFile);
-  }
-
-  function handleDragOver(event) {
-    event.preventDefault();
-  }
-
-  function handleDrop(event) {
-    event.preventDefault();
-    const droppedFile = event.dataTransfer.files?.[0];
-    if (droppedFile) setImageFile(droppedFile);
-  }
-
-  function handleRemoveImage() {
-    setImageFile(null);
-    if (inputRef.current) {
-      inputRef.current.value = "";
+  const id = useId();
+  const input = useRef(null);
+  const [preview, setPreview] = useState("");
+  const [error, setError] = useState("");
+  const [dragging, setDragging] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    if (!imageFile) {
+      setPreview("");
+      return;
     }
-  }
-
-  async function uploadImageToCloudinary() {
+    const url = URL.createObjectURL(imageFile);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [imageFile]);
+  useEffect(() => {
+    if (!imageFile || isEditMode) return;
+    let active = true;
+    const controller = new AbortController();
     setImageLoadingState(true);
+    setUploadedImageUrl("");
+    setError("");
     const data = new FormData();
     data.append("my_file", imageFile);
-    const response = await axios.post(
-      "https://ecomtryonbackend.vercel.app/api/admin/products/upload-image",
-      data
-    );
-
-    if (response?.data?.success) {
-      setUploadedImageUrl(response.data.result.url);
-      setImageLoadingState(false);
+    axios
+      .post(`${API_BASE_URL}/admin/products/upload-image`, data, {
+        signal: controller.signal,
+      })
+      .then((response) => {
+        if (!active) return;
+        if (!response.data?.success) throw new Error("upload-failed");
+        const url = response.data.result.secure_url || response.data.result.url;
+        setUploadedImageUrl(
+          url?.replace(
+            "http://res.cloudinary.com/",
+            "https://res.cloudinary.com/",
+          ),
+        );
+      })
+      .catch((reason) => {
+        if (active && !axios.isCancel(reason))
+          setError("The photograph couldn't be uploaded. Please try again.");
+      })
+      .finally(() => {
+        if (active) setImageLoadingState(false);
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [
+    imageFile,
+    attempt,
+    isEditMode,
+    setUploadedImageUrl,
+    setImageLoadingState,
+  ]);
+  function choose(file) {
+    if (isEditMode || !file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose an image file.");
+      return;
     }
+    setError("");
+    setImageFile(file);
   }
-
-  useEffect(() => {
-    if (imageFile !== null) uploadImageToCloudinary();
-  }, [imageFile]);
-
+  function remove() {
+    setImageFile(null);
+    setUploadedImageUrl("");
+    setImageLoadingState(false);
+    setError("");
+    if (input.current) input.current.value = "";
+  }
   return (
-    <div
-      className={`w-full  mt-4 ${isCustomStyling ? "" : "max-w-md mx-auto"}`}
-    >
-      <Label
-        className={`mb-2 block text-center ${
-          title === "YOUR IMAGE"
-            ? "text-[1.5rem] font-extrabold"
-            : "text-lg font-semibold"
-        }`}
-      >
-        {title}
-      </Label>
-
+    <div className="admin-photo-upload">
+      <label htmlFor={id}>{title}</label>
       <div
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        className={`${
-          isEditMode ? "opacity-60" : ""
-        } border-2 border-dashed rounded-lg p-4`}
+        className={`admin-upload-zone ${dragging ? "is-dragging" : ""} ${isEditMode ? "is-readonly" : ""}`}
+        onDragOver={(event) => {
+          event.preventDefault();
+          if (!isEditMode) setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(event) => {
+          event.preventDefault();
+          setDragging(false);
+          choose(event.dataTransfer.files?.[0]);
+        }}
       >
-        <Input
-          id="image-upload"
+        <input
+          ref={input}
+          id={id}
+          className="admin-file-input"
           type="file"
-          className="hidden"
-          ref={inputRef}
-          onChange={handleImageFileChange}
-          disabled={isEditMode}
+          accept="image/*"
+          disabled={isEditMode || imageLoadingState}
+          onChange={(event) => choose(event.target.files?.[0])}
         />
-        {!imageFile ? (
-          <Label
-            htmlFor="image-upload"
-            className={`${
-              isEditMode ? "cursor-not-allowed" : ""
-            } flex flex-col items-center justify-center h-32 cursor-pointer`}
-          >
-            <UploadCloudIcon className="w-10 h-10 text-muted-foreground mb-2" />
-            <span>Drag & drop or click to upload image</span>
-          </Label>
-        ) : imageLoadingState ? (
-          <Skeleton className="h-10 bg-gray-100" />
-        ) : (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <FileIcon className="w-8 text-primary mr-2 h-8" />
+        {preview || (isEditMode && uploadedImageUrl) ? (
+          <div className="admin-upload-preview">
+            <img
+              src={preview || uploadedImageUrl}
+              alt={
+                isEditMode
+                  ? "Current product photograph"
+                  : "Selected upload preview"
+              }
+            />
+            <div>
+              <strong>{imageFile?.name || "Current product image"}</strong>
+              <span role="status">
+                {imageLoadingState
+                  ? "Uploading your photograph..."
+                  : isEditMode
+                    ? "Image changes are disabled in this editor."
+                    : error
+                      ? "Upload needs attention"
+                      : uploadedImageUrl
+                        ? "Uploaded and ready"
+                        : "Select a photograph"}
+              </span>
             </div>
-            <p className="text-sm font-medium">{imageFile.name}</p>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-foreground"
-              onClick={handleRemoveImage}
-            >
-              <XIcon className="w-4 h-4" />
-              <span className="sr-only">Remove File</span>
-            </Button>
+            {!isEditMode && (
+              <button
+                type="button"
+                onClick={remove}
+                aria-label="Remove selected photograph"
+              >
+                <X size={17} />
+              </button>
+            )}
+            {!imageLoadingState && uploadedImageUrl && !error && (
+              <Check size={17} className="admin-upload-ready" />
+            )}
           </div>
+        ) : (
+          <label htmlFor={id} className="admin-upload-invitation">
+            <span>
+              <UploadCloud size={30} strokeWidth={1} />
+            </span>
+            <strong>Bring the photograph in.</strong>
+            <span>Drop an image here, or choose a file</span>
+            <small>Image files from your device</small>
+          </label>
         )}
       </div>
+      {error && (
+        <div className="admin-upload-error" role="alert">
+          <span>{error}</span>
+          {imageFile && (
+            <button
+              type="button"
+              onClick={() => setAttempt((value) => value + 1)}
+            >
+              Retry upload <RefreshCw size={13} />
+            </button>
+          )}
+        </div>
+      )}
+      {imageLoadingState && (
+        <div className="admin-upload-progress" role="status">
+          <span />
+          Uploading photograph
+        </div>
+      )}
     </div>
   );
 }
-
-export default ProductImageUpload;

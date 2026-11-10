@@ -9,6 +9,7 @@ const initialState = {
   orderId: null,
   orderList: [],
   orderDetails: null,
+  activeDetailRequest: null,
 };
 
 export const createNewOrder = createAsyncThunk(
@@ -35,17 +36,22 @@ export const capturePayment = createAsyncThunk(
 
 export const getAllOrdersByUserId = createAsyncThunk(
   "/order/getAllOrdersByUserId",
-  async (userId) => {
-    const response = await axios.get(`${baseURL}/list/${userId}`);
-
-    return response.data;
+  async (userId, { signal }) => {
+    try {
+      const response = await axios.get(`${baseURL}/list/${userId}`, { signal });
+      return response.data;
+    } catch (error) {
+      // The existing API represents an empty order history with HTTP 404.
+      if (error.response?.status === 404) return { success: true, data: [] };
+      throw error;
+    }
   },
 );
 
 export const getOrderDetails = createAsyncThunk(
   "/order/getOrderDetails",
-  async (id) => {
-    const response = await axios.get(`${baseURL}/details/${id}`);
+  async (id, { signal }) => {
+    const response = await axios.get(`${baseURL}/details/${id}`, { signal });
 
     return response.data;
   },
@@ -57,6 +63,8 @@ const shoppingOrderSlice = createSlice({
   reducers: {
     resetOrderDetails: (state) => {
       state.orderDetails = null;
+      state.activeDetailRequest = null;
+      state.isLoading = false;
     },
   },
   extraReducers: (builder) => {
@@ -89,14 +97,17 @@ const shoppingOrderSlice = createSlice({
         state.isLoading = false;
         state.orderList = [];
       })
-      .addCase(getOrderDetails.pending, (state) => {
+      .addCase(getOrderDetails.pending, (state, action) => {
         state.isLoading = true;
+        state.activeDetailRequest = action.meta.requestId;
       })
       .addCase(getOrderDetails.fulfilled, (state, action) => {
+        if (state.activeDetailRequest !== action.meta.requestId) return;
         state.isLoading = false;
         state.orderDetails = action.payload.data;
       })
-      .addCase(getOrderDetails.rejected, (state) => {
+      .addCase(getOrderDetails.rejected, (state, action) => {
+        if (state.activeDetailRequest !== action.meta.requestId) return;
         state.isLoading = false;
         state.orderDetails = null;
       });

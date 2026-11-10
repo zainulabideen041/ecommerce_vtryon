@@ -1,59 +1,42 @@
-import { AlignJustify, LogOut, ShoppingBag, User } from "lucide-react";
-import { Button } from "../ui/button";
+import { Menu, LogOut } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import { logoutUser } from "@/store/auth-slice";
-import { Avatar, AvatarFallback } from "../ui/avatar";
-
-function AdminHeader({ setOpen }) {
+import { adminNavigation } from "./sidebar";
+export default function AdminHeader({ setOpen }) {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-
-  function handleLogout() {
-    dispatch(logoutUser());
-  }
-
+  const location = useLocation();
+  const page = adminNavigation.find((item) => item.path === location.pathname);
   return (
-    <header className="sticky top-0 z-40 flex h-20 items-center justify-between px-4 md:px-6 bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm transition-all duration-300">
-      {/* Left Section - Mobile Menu + Logo */}
-      <div className="flex items-center gap-4">
-        <Button
+    <header className="admin-topbar">
+      <div>
+        <button
+          className="admin-icon-button admin-menu-toggle"
           onClick={() => setOpen(true)}
-          className="lg:hidden"
-          variant="outline"
-          size="icon"
+          aria-label="Open admin navigation"
         >
-          <AlignJustify className="h-5 w-5" />
-          <span className="sr-only">Toggle Menu</span>
-        </Button>
+          <Menu size={20} />
+        </button>
+        <p>
+          <span>LUXAR STUDIO</span>
+          <span aria-hidden="true">/</span>
+          <strong>{page?.label || "Workspace"}</strong>
+        </p>
       </div>
-
-      {/* Right Section - User Info + Logout */}
-      <div className="flex items-center gap-3">
-        {/* User Info */}
-        <div className="hidden md:flex items-center gap-3 px-4 py-2 rounded-lg bg-muted/50">
-          <Avatar className="h-9 w-9 bg-gradient-primary">
-            <AvatarFallback className="bg-gradient-primary text-white font-semibold">
-              {user?.userName ? user.userName[0].toUpperCase() : "A"}
-            </AvatarFallback>
-          </Avatar>
-          <div className="hidden lg:block">
-            <p className="text-sm font-medium">{user?.userName || "Admin"}</p>
-            <p className="text-xs text-muted-foreground">Administrator</p>
-          </div>
-        </div>
-
-        {/* Logout Button */}
-        <Button
-          onClick={handleLogout}
-          className="inline-flex gap-2 items-center bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-          size="default"
-        >
-          <LogOut className="h-4 w-4" />
-          <span className="hidden sm:inline">Logout</span>
-        </Button>
+      <div>
+        <span className="admin-user-monogram" aria-hidden="true">
+          {user?.userName?.[0]?.toUpperCase() || "A"}
+        </span>
+        <span className="admin-user">
+          <strong>{user?.userName || "Administrator"}</strong>
+          <small>Store administrator</small>
+        </span>
+        <button className="admin-logout" onClick={() => dispatch(logoutUser())}>
+          <LogOut size={16} />
+          <span>Sign out</span>
+        </button>
       </div>
     </header>
   );
 }
-
-export default AdminHeader;

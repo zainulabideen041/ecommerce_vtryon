@@ -1,307 +1,385 @@
-import ProductFilter from "@/components/shopping-view/filter";
-import ProductDetailsDialog from "@/components/shopping-view/product-details";
-import ShoppingProductTile from "@/components/shopping-view/product-tile";
-import { Button } from "@/components/ui/button";
+import { LOCAL_CATALOG } from "@/lib/catalog-source";
+import { useCatalogMetadata } from "@/hooks/use-catalog-metadata";
+import { CatalogPagination } from "@/components/shopping-view/local-catalog";
+import { useEditorialLayoutRefresh } from "@/components/shopping-view/editorial-sections";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useToast } from "@/components/ui/use-toast";
-import { sortOptions } from "@/config";
-import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
+  CollectionCampaign,
+  CollectionInterlude,
+  CollectionFittingNote,
+} from "@/components/shopping-view/collection-editorial";
+import { ProductRail } from "@/components/shopping-view/product-rail";
+import { Fragment, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Columns2, LayoutGrid, SlidersHorizontal, X } from "lucide-react";
 import {
   fetchAllFilteredProducts,
   fetchProductDetails,
 } from "@/store/shop/products-slice";
-import { ArrowUpDownIcon, SlidersHorizontal, X, Package } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
+import { categoryOptionsMap, brandOptionsMap, sortOptions } from "@/config";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
   SheetTitle,
+  SheetDescription,
   SheetTrigger,
 } from "@/components/ui/sheet";
-
-function createSearchParamsHelper(filterParams) {
-  const queryParams = [];
-
-  for (const [key, value] of Object.entries(filterParams)) {
-    if (Array.isArray(value) && value.length > 0) {
-      const paramValue = value.join(",");
-      queryParams.push(`${key}=${encodeURIComponent(paramValue)}`);
-    }
-  }
-
-  return queryParams.join("&");
-}
-
-function ShoppingListing() {
-  const dispatch = useDispatch();
-  const { productList, productDetails } = useSelector(
-    (state) => state.shopProducts,
+import ProductFilter from "@/components/shopping-view/filter";
+import ShoppingProductTile from "@/components/shopping-view/product-tile";
+import ProductDetailsDialog from "@/components/shopping-view/product-details";
+export default function ShoppingListing() {
+  const [params, setParams] = useSearchParams();
+  const { metadata } = useCatalogMetadata();
+  const page = Math.max(1, Number.parseInt(params.get("page"), 10) || 1);
+  const categoryLabels = {
+    ...categoryOptionsMap,
+    ...Object.fromEntries(
+      [...(metadata?.groups || []), ...(metadata?.categories || [])].map(
+        (category) => [category.id, category.label],
+      ),
+    ),
+  };
+  const brandLabels = {
+    ...brandOptionsMap,
+    ...Object.fromEntries(
+      (metadata?.brands || []).map((brand) => [brand.id, brand.label]),
+    ),
+  };
+  const [view, setView] = useState("gallery");
+  const [sort, setSort] = useState("price-lowtohigh");
+  const [open, setOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const { productList, productDetails, pagination } = useSelector(
+    (s) => s.shopProducts,
   );
-  const { cartItems } = useSelector((state) => state.shopCart);
-  const { user } = useSelector((state) => state.auth);
-  const [filters, setFilters] = useState({});
-  const [sort, setSort] = useState(null);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
-  const [openFilterSheet, setOpenFilterSheet] = useState(false);
-  const { toast } = useToast();
+  useEditorialLayoutRefresh(`${catalogLoading}-${productList?.length}-${view}`);
+  const { user } = useSelector((s) => s.auth);
+  const { cartItems } = useSelector((s) => s.shopCart);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const categorySearchParam = searchParams.get("category");
-
-  function handleSort(value) {
-    setSort(value);
+  const { toast } = useToast();
+  const category = params.get("category") || "";
+  const brand = params.get("brand") || "";
+  const filters = {
+    category: category.split(",").filter(Boolean),
+    brand: brand.split(",").filter(Boolean),
+  };
+  useEffect(() => {
+    let current = true;
+    setCatalogLoading(true);
+    dispatch(
+      fetchAllFilteredProducts({
+        filterParams: { category, brand },
+        sortParams: sort,
+        page,
+      }),
+    ).then(() => {
+      if (current) setCatalogLoading(false);
+    });
+    return () => {
+      current = false;
+    };
+  }, [dispatch, category, brand, sort, page]);
+  useEffect(() => {
+    if (productDetails) setOpen(true);
+  }, [productDetails]);
+  function filter(section, value) {
+    const next = {
+      ...filters,
+      [section]: filters[section].includes(value)
+        ? filters[section].filter((v) => v !== value)
+        : [...filters[section], value],
+    };
+    const query = new URLSearchParams();
+    Object.entries(next).forEach(([key, values]) => {
+      if (values.length) query.set(key, values.join(","));
+    });
+    sessionStorage.setItem("filters", JSON.stringify(next));
+    setParams(query);
   }
-
-  function handleFilter(getSectionId, getCurrentOption) {
-    let cpyFilters = { ...filters };
-    const indexOfCurrentSection = Object.keys(cpyFilters).indexOf(getSectionId);
-
-    if (indexOfCurrentSection === -1) {
-      cpyFilters = {
-        ...cpyFilters,
-        [getSectionId]: [getCurrentOption],
-      };
-    } else {
-      const indexOfCurrentOption =
-        cpyFilters[getSectionId].indexOf(getCurrentOption);
-
-      if (indexOfCurrentOption === -1)
-        cpyFilters[getSectionId].push(getCurrentOption);
-      else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
-    }
-
-    setFilters(cpyFilters);
-    sessionStorage.setItem("filters", JSON.stringify(cpyFilters));
+  function clear() {
+    sessionStorage.removeItem("filters");
+    setParams({});
   }
-
-  function handleGetProductDetails(getCurrentProductId) {
-    dispatch(fetchProductDetails(getCurrentProductId));
-  }
-
-  function handleAddtoCart(getCurrentProductId, getTotalStock) {
-    // Check if user is authenticated
+  function add(id, stock) {
     if (!user) {
-      toast({
-        title: "Login required",
-        description: "Please login to add items to your cart",
-        variant: "destructive",
-      });
+      toast({ title: "Sign in to save this piece to your bag" });
       navigate("/auth/login");
       return;
     }
-
-    let getCartItems = cartItems.items || [];
-
-    if (getCartItems.length) {
-      const indexOfCurrentItem = getCartItems.findIndex(
-        (item) => item.productId === getCurrentProductId,
-      );
-      if (indexOfCurrentItem > -1) {
-        const getQuantity = getCartItems[indexOfCurrentItem].quantity;
-        if (getQuantity + 1 > getTotalStock) {
-          toast({
-            title: "Stock limit reached",
-            description: `Only ${getQuantity} quantity can be added for this item`,
-            variant: "destructive",
-          });
-
-          return;
-        }
-      }
+    const existing = cartItems?.items?.find((i) => i.productId === id);
+    if (existing && existing.quantity + 1 > stock) {
+      toast({ title: "Stock limit reached", variant: "destructive" });
+      return;
     }
-
-    dispatch(
-      addToCart({
-        userId: user?.id,
-        productId: getCurrentProductId,
-        quantity: 1,
-      }),
-    ).then((data) => {
-      if (data?.payload?.success) {
-        dispatch(fetchCartItems(user?.id));
-        toast({
-          title: "Added to cart",
-          description: "Product has been added to your cart",
-        });
+    return dispatch(
+      addToCart({ userId: user.id, productId: id, quantity: 1 }),
+    ).then((d) => {
+      if (d?.payload?.success) {
+        dispatch(fetchCartItems(user.id));
+        toast({ title: "Added to your bag" });
+        return true;
       }
+      toast({
+        title: "This piece could not be added. Please try again.",
+        variant: "destructive",
+      });
+      return false;
     });
   }
-
-  function clearFilters() {
-    setFilters({});
-    sessionStorage.removeItem("filters");
+  const count = filters.category.length + filters.brand.length;
+  const collectionName =
+    filters.category.length === 1 ? categoryLabels[category] || "The" : "The";
+  function chooseCategory(value) {
+    const query = new URLSearchParams(params);
+    query.delete("page");
+    if (value) query.set("category", value);
+    else query.delete("category");
+    sessionStorage.setItem(
+      "filters",
+      JSON.stringify({ ...filters, category: value ? [value] : [] }),
+    );
+    setParams(query);
   }
-
-  useEffect(() => {
-    setSort("price-lowtohigh");
-    setFilters(JSON.parse(sessionStorage.getItem("filters")) || {});
-  }, [categorySearchParam]);
-
-  useEffect(() => {
-    if (filters && Object.keys(filters).length > 0) {
-      const createQueryString = createSearchParamsHelper(filters);
-      setSearchParams(new URLSearchParams(createQueryString));
-    }
-  }, [filters]);
-
-  useEffect(() => {
-    if (filters !== null && sort !== null)
-      dispatch(
-        fetchAllFilteredProducts({ filterParams: filters, sortParams: sort }),
-      );
-  }, [dispatch, sort, filters]);
-
-  useEffect(() => {
-    if (productDetails !== null) setOpenDetailsDialog(true);
-  }, [productDetails]);
-
-  const activeFiltersCount = Object.values(filters).reduce(
-    (acc, curr) => acc + curr.length,
-    0,
-  );
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
-        {/* Desktop Filter Sidebar */}
-        <aside className="hidden lg:block">
-          <ProductFilter filters={filters} handleFilter={handleFilter} />
-        </aside>
-
-        {/* Main Content */}
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b">
-            <div>
-              <h1 className="text-3xl font-display font-bold tracking-tight">
-                All Products
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {productList?.length || 0} products found
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* Mobile Filter Button */}
-              <Sheet open={openFilterSheet} onOpenChange={setOpenFilterSheet}>
+    <div className="collection-page collection-studio">
+      <CollectionCampaign
+        total={pagination?.total}
+        name={collectionName}
+        products={productList || []}
+        loading={catalogLoading}
+        onInspect={(id) => dispatch(fetchProductDetails(id))}
+      />
+      <div className="collection-discovery">
+        <span>MAKE IT YOUR EDIT</span>
+        <nav aria-label="Browse collection categories">
+          {(LOCAL_CATALOG
+            ? [
+                ["", "All pieces"],
+                ...(metadata?.groups || []).map((group) => [
+                  group.id,
+                  group.label,
+                ]),
+              ]
+            : [
+                ["", "All pieces"],
+                ["women", "Women"],
+                ["men", "Men"],
+                ["kids", "Kids"],
+                ["accessories", "Accessories"],
+                ["footwear", "Footwear"],
+              ]
+          ).map(([id, label]) => (
+            <button
+              key={label}
+              onClick={() => chooseCategory(id)}
+              aria-pressed={
+                id ? filters.category.includes(id) : !filters.category.length
+              }
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+        <a href="#collection-pieces" className="collection-skip-products">
+          Explore the pieces <span aria-hidden="true">&darr;</span>
+        </a>
+      </div>
+      <div className="store-page collection-content" id="collection-pieces">
+        <div className="collection-layout">
+          <aside className="desktop-filters">
+            <ProductFilter
+              filters={filters}
+              handleFilter={filter}
+              onCategoryChange={chooseCategory}
+            />
+          </aside>
+          <div>
+            <div className="collection-toolbar">
+              <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="lg:hidden relative">
-                    <SlidersHorizontal className="w-4 h-4 mr-2" />
-                    Filters
-                    {activeFiltersCount > 0 && (
-                      <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full">
-                        {activeFiltersCount}
-                      </span>
-                    )}
-                  </Button>
+                  <button className="mobile-filter-button">
+                    <SlidersHorizontal size={16} /> Filters{" "}
+                    {count > 0 ? `(${count})` : ""}
+                  </button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-full max-w-sm">
-                  <SheetHeader>
-                    <SheetTitle>Filters</SheetTitle>
-                  </SheetHeader>
-                  <div className="mt-6">
-                    <ProductFilter
-                      filters={filters}
-                      handleFilter={handleFilter}
-                    />
-                  </div>
+                <SheetContent side="left" className="store-sheet">
+                  <SheetTitle>Make it your edit.</SheetTitle>
+                  <SheetDescription>
+                    Filter by category and brand.
+                  </SheetDescription>
+                  <ProductFilter
+                    filters={filters}
+                    handleFilter={filter}
+                    onCategoryChange={chooseCategory}
+                  />
+                  <button
+                    className="solid-link w-full mt-6"
+                    onClick={() => setFilterOpen(false)}
+                  >
+                    Show {pagination?.total ?? productList?.length ?? 0} pieces
+                  </button>
+                  {count > 0 && (
+                    <button className="text-link" onClick={clear}>
+                      Clear all filters
+                    </button>
+                  )}
                 </SheetContent>
               </Sheet>
-
-              {/* Clear Filters */}
-              {activeFiltersCount > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="hidden sm:flex"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Clear ({activeFiltersCount})
-                </Button>
-              )}
-
-              {/* Sort Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="min-w-[140px]">
-                    <ArrowUpDownIcon className="h-4 w-4 mr-2" />
-                    Sort by
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[200px]">
-                  <DropdownMenuRadioGroup
-                    value={sort}
-                    onValueChange={handleSort}
-                  >
-                    {sortOptions.map((sortItem) => (
-                      <DropdownMenuRadioItem
-                        value={sortItem.id}
-                        key={sortItem.id}
-                      >
-                        {sortItem.label}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
-          {/* Products Grid */}
-          {productList && productList.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {productList.map((productItem, index) => (
+              <span className="result-count" role="status">
+                {catalogLoading
+                  ? "Finding your pieces…"
+                  : `${pagination?.total ?? productList?.length ?? 0} pieces`}
+              </span>
+              <div className="collection-display-controls">
                 <div
-                  key={productItem._id}
-                  className="fade-in"
-                  style={{ animationDelay: `${index * 50}ms` }}
+                  className="collection-view-switch"
+                  role="group"
+                  aria-label="Product display"
                 >
-                  <ShoppingProductTile
-                    handleGetProductDetails={handleGetProductDetails}
-                    product={productItem}
-                    handleAddtoCart={handleAddtoCart}
-                  />
+                  <button
+                    aria-label="Gallery grid"
+                    title="Gallery grid"
+                    aria-pressed={view === "gallery"}
+                    onClick={() => setView("gallery")}
+                  >
+                    <LayoutGrid size={17} />
+                  </button>
+                  <button
+                    aria-label="Large editorial grid"
+                    title="Large editorial grid"
+                    aria-pressed={view === "editorial"}
+                    onClick={() => setView("editorial")}
+                  >
+                    <Columns2 size={17} />
+                  </button>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
-                <Package className="w-10 h-10 text-muted-foreground" />
+                <label htmlFor="collection-sort" className="sr-only">
+                  Sort collection
+                </label>
+                <select
+                  id="collection-sort"
+                  value={sort}
+                  onChange={(e) => {
+                    setSort(e.target.value);
+                    const query = new URLSearchParams(params);
+                    query.delete("page");
+                    setParams(query, { replace: true });
+                  }}
+                >
+                  {sortOptions.map((o) => (
+                    <option value={o.id} key={o.id}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <h3 className="text-xl font-semibold mb-2">No products found</h3>
-              <p className="text-muted-foreground mb-6 max-w-md">
-                We couldn't find any products matching your filters. Try
-                adjusting your search criteria.
-              </p>
-              {activeFiltersCount > 0 && (
-                <Button onClick={clearFilters} variant="outline">
-                  Clear all filters
-                </Button>
-              )}
             </div>
-          )}
+            {count > 0 && (
+              <div className="filter-chips">
+                {Object.entries(filters).flatMap(([section, values]) =>
+                  values.map((value) => (
+                    <button
+                      key={`${section}-${value}`}
+                      onClick={() => filter(section, value)}
+                      aria-label={`Remove ${categoryLabels[value] || brandLabels[value] || value} filter`}
+                    >
+                      {categoryLabels[value] || brandLabels[value] || value}
+                      <X size={12} />
+                    </button>
+                  )),
+                )}
+                <button onClick={clear}>Clear all</button>
+              </div>
+            )}
+            {catalogLoading ? (
+              <div
+                className={`product-grid collection-products view-${view}`}
+                aria-busy="true"
+              >
+                {Array.from({ length: 6 }, (_, i) => (
+                  <div className="product-skeleton" key={i} />
+                ))}
+              </div>
+            ) : productList?.length ? (
+              <ProductRail
+                className={`product-grid collection-products view-${view}`}
+                label="Garments in the collection"
+              >
+                {productList.map((p, index) => (
+                  <Fragment key={p._id}>
+                    <ShoppingProductTile
+                      key={p._id}
+                      product={p}
+                      handleGetProductDetails={(id) =>
+                        dispatch(fetchProductDetails(id))
+                      }
+                      handleAddtoCart={add}
+                    />
+                    {index === 5 && productList.length > 6 && (
+                      <CollectionInterlude
+                        product={
+                          productList[Math.min(7, productList.length - 1)]
+                        }
+                        onInspect={(id) => dispatch(fetchProductDetails(id))}
+                      />
+                    )}
+                  </Fragment>
+                ))}
+              </ProductRail>
+            ) : (
+              <div className="empty-state">
+                <p className="eyebrow">A LITTLE ROOM FOR DISCOVERY</p>
+                <h2>No pieces in this edit.</h2>
+                <p>
+                  {count
+                    ? "Try another category or brand to find your next favourite."
+                    : "The collection couldn't be loaded. Please try again in a moment."}
+                </p>
+                <button
+                  className="solid-link"
+                  onClick={
+                    count
+                      ? clear
+                      : () =>
+                          dispatch(
+                            fetchAllFilteredProducts({
+                              filterParams: {},
+                              sortParams: sort,
+                            }),
+                          )
+                  }
+                >
+                  {count ? "Explore all pieces" : "Try again"}
+                </button>
+              </div>
+            )}
+            <CatalogPagination
+              pagination={pagination}
+              busy={catalogLoading}
+              onPage={(next) => {
+                const query = new URLSearchParams(params);
+                query.set("page", next);
+                setParams(query);
+                document
+                  .getElementById("collection-pieces")
+                  ?.scrollIntoView({ block: "start" });
+              }}
+            />
+          </div>
         </div>
+        {!catalogLoading && (
+          <CollectionFittingNote product={productList?.[0]} />
+        )}
       </div>
-
       <ProductDetailsDialog
-        open={openDetailsDialog}
-        setOpen={setOpenDetailsDialog}
+        open={open}
+        setOpen={setOpen}
         productDetails={productDetails}
       />
     </div>
   );
 }
-
-export default ShoppingListing;

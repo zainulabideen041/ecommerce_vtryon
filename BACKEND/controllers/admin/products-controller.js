@@ -67,6 +67,31 @@ const handleImageDeleteBeacon = async (req, res) => {
   }
 };
 
+// Optional rich-catalog fields coexist with the original admin form payload.
+const catalogFieldNames = [
+  "handle",
+  "productType",
+  "categoryLabel",
+  "brandLabel",
+  "taxonomy",
+  "categoryIds",
+  "collectionHandles",
+  "tags",
+  "images",
+  "variants",
+  "pricing",
+  "availability",
+  "attributes",
+  "reviewSummary",
+  "source",
+];
+const catalogFields = (body) =>
+  Object.fromEntries(
+    catalogFieldNames
+      .filter((key) => Object.prototype.hasOwnProperty.call(body, key))
+      .map((key) => [key, body[key]]),
+  );
+
 //add a new product
 const addProduct = async (req, res) => {
   try {
@@ -85,6 +110,7 @@ const addProduct = async (req, res) => {
     console.log(averageReview, "averageReview");
 
     const newlyCreatedProduct = new Product({
+      ...catalogFields(req.body),
       image: ensureHttps(image),
       title,
       description,
@@ -117,7 +143,7 @@ const fetchAllProducts = async (req, res) => {
     // Use lean() for faster read-only queries and select only needed fields
     const listOfProducts = await Product.find({})
       .select(
-        "image title description category brand price salePrice totalStock averageReview",
+        "image title description category brand price salePrice totalStock averageReview handle productType categoryLabel brandLabel taxonomy images variants pricing availability attributes reviewSummary source",
       )
       .lean()
       .exec();
@@ -175,6 +201,7 @@ const editProduct = async (req, res) => {
     findProduct.image = image ? ensureHttps(image) : findProduct.image;
     findProduct.averageReview = averageReview || findProduct.averageReview;
 
+    Object.assign(findProduct, catalogFields(req.body));
     await findProduct.save();
     res.status(200).json({
       success: true,

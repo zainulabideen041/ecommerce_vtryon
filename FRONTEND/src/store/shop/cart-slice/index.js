@@ -1,6 +1,7 @@
 import axios from "axios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { API_BASE_URL } from "@/config";
+import { isLocalProductId } from "@/lib/catalog-source";
 const baseURL = `${API_BASE_URL}/shop/cart`;
 
 const initialState = {
@@ -11,6 +12,10 @@ const initialState = {
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
   async ({ userId, productId, quantity }) => {
+    if (isLocalProductId(productId))
+      throw new Error(
+        "Local catalog items are preview-only and cannot enter live checkout.",
+      );
     const response = await axios.post(`${baseURL}/add`, {
       userId,
       productId,

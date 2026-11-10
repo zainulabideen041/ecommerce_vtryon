@@ -5,7 +5,7 @@ import { loginUser } from "@/store/auth-slice";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import { LogIn, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const initialState = {
   email: "",
@@ -40,65 +40,36 @@ function AuthLogin() {
   }
 
   return (
-    <div className="w-full space-y-8 slide-up">
-      {/* Header */}
-      <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary mb-4">
-          <LogIn className="w-8 h-8 text-white" />
-        </div>
-        <h1 className="text-5xl font-display font-bold tracking-tight text-foreground">
-          Welcome Back
-        </h1>
-        <p className="text-muted-foreground text-xl mt-3">
-          Sign in to continue your shopping journey
-        </p>
-      </div>
-
-      {/* Form Card */}
-      <div className="bg-card border border-border rounded-2xl p-8 shadow-lg space-y-6">
-        <CommonForm
-          formControls={loginFormControls}
-          buttonText={isLoading ? "Signing in..." : "Sign In"}
-          formData={formData}
-          setFormData={setFormData}
-          onSubmit={onSubmit}
-          isBtnDisabled={isLoading}
-        />
-
-        {/* Divider */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border"></div>
-          </div>
-          <div className="relative flex justify-center text-md">
-            <span className="px-4 bg-card text-muted-foreground">
-              New to Luxar?
-            </span>
-          </div>
-        </div>
-
-        {/* Register Link */}
-        <Link
-          to="/auth/register"
-          className="group flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border-2 border-border hover:border-primary transition-all duration-300 font-medium"
-        >
-          Create an account
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+    <div className="auth-content slide-up">
+      <p className="eyebrow">YOUR LUXAR</p>
+      <h1>
+        Good to see
+        <br />
+        <em>you again.</em>
+      </h1>
+      <p className="auth-introduction">
+        Sign in to follow your orders and make your next piece yours.
+      </p>
+      <CommonForm
+        formControls={loginFormControls}
+        buttonText={isLoading ? "Signing in..." : "Sign in"}
+        formData={formData}
+        setFormData={setFormData}
+        onSubmit={onSubmit}
+        isBtnDisabled={isLoading}
+        isSubmitting={isLoading}
+        autoCompleteMap={{ email: "email", password: "current-password" }}
+      />
+      <div className="auth-switch-row">
+        <span>New to Luxar?</span>
+        <Link className="auth-switch" to="/auth/register">
+          Create an account <ArrowRight size={16} />
         </Link>
       </div>
-
-      {/* Footer Links */}
-      <div className="text-center space-y-2">
-        <Link
-          to="/shop/home"
-          className="text-md text-primary hover:underline inline-flex items-center gap-1"
-        >
-          Continue as guest
-          <ArrowRight className="w-3 h-3" />
-        </Link>
-      </div>
+      <Link className="auth-guest text-link" to="/shop/home">
+        Continue exploring <ArrowRight size={15} />
+      </Link>
     </div>
   );
 }
-
 export default AuthLogin;
