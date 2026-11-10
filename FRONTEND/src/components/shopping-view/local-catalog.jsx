@@ -10,13 +10,13 @@ export function LocalCatalogNotice() {
   if (!LOCAL_CATALOG) return null;
   return (
     <div className="local-catalog-notice" role="status">
-      <span>LOCAL CATALOG PREVIEW</span>
+      <span>DUMMY CATALOG PREVIEW</span>
       <p>
         {error
-          ? "The local dataset could not be read."
+          ? "The dummy catalog could not be loaded."
           : metadata
             ? `${metadata.total.toLocaleString()} products · ${metadata.categories.length} categories · USD`
-            : "Loading your local fashion catalog…"}
+            : "Loading the dummy fashion catalog…"}
       </p>
       <span>Preview items are excluded from live checkout.</span>
     </div>

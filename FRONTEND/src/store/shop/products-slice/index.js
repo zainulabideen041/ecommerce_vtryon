@@ -52,7 +52,7 @@ export const fetchProductDetails = createAsyncThunk(
     if (isLocalProductId(id)) {
       if (!LOCAL_CATALOG)
         throw new Error(
-          "Local catalog previews are only available in development.",
+          "Switch to Dummy catalog to view this preview product.",
         );
       return localCatalogRequest(`products/${id}`, {}, signal);
     }

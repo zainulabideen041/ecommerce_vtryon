@@ -26,6 +26,7 @@ import {
 } from "../ui/dropdown-menu";
 import { logoutUser } from "@/store/auth-slice";
 import { fetchCartItems } from "@/store/shop/cart-slice";
+import CatalogModeSwitch from "./catalog-mode-switch";
 import UserCartWrapper from "./cart-wrapper";
 import { LOCAL_CATALOG } from "@/lib/catalog-source";
 const links = LOCAL_CATALOG
@@ -128,6 +129,7 @@ export default function ShoppingHeader() {
                 </nav>
               </SheetContent>
             </Sheet>
+            <CatalogModeSwitch />
             <span className="masthead-note">Your style. Your rules.</span>
           </div>
           <Link to="/shop/home" className="wordmark" aria-label="Luxar home">
@@ -140,6 +142,7 @@ export default function ShoppingHeader() {
             <CollectionLinks />
           </nav>
           <div className="header-actions">
+            <CatalogModeSwitch />
             <Link className="icon-button" to="/shop/search" aria-label="Search">
               <Search size={20} />
             </Link>

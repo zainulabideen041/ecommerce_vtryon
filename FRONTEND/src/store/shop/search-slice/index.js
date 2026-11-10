@@ -41,7 +41,7 @@ const searchSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(getSearchResults.pending, (state) => {
+      .addCase(getSearchResults.pending, (state, action) => {
         state.isLoading = true;
         state.activeRequest = action.meta.requestId;
       })
