@@ -228,6 +228,29 @@ test("homepage featured edit is returned from the prebuilt pack", async () => {
   );
 });
 
+test("deployment configuration serves the live storefront catalog with CORS", async () => {
+  const configuration = await readFile(
+    new URL("../wrangler.jsonc", import.meta.url),
+    "utf8",
+  );
+  const origins = configuration.match(/"ALLOWED_ORIGINS":\s*("[^"\n]+")/);
+  assert.ok(origins, "Worker deployment must configure storefront origins");
+  const env = {
+    ...environment(),
+    ALLOWED_ORIGINS: JSON.parse(origins[1]),
+  };
+  const origin = "https://luxar-vtryon.vercel.app";
+  for (const route of ["/api/meta", "/api/products?category=dresses"]) {
+    const response = await worker.fetch(
+      request(route, { headers: { Origin: origin } }),
+      env,
+    );
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("Access-Control-Allow-Origin"), origin);
+    assert.equal((await response.json()).success, true);
+  }
+});
+
 test("CORS is origin-specific, preflight permits reads, and all writes are rejected", async () => {
   const env = environment();
   const allowed = await worker.fetch(

@@ -27,7 +27,7 @@ without the source dataset. `VITE_DUMMY_CATALOG_API_URL` can override it; use
 - Versioned catalog data, checksummed upload plan, and publish-last manifest.
 - Localhost CORS, response caching, category/search/filter/sort/pagination,
   real product details and JPEG thumbnail delivery.
-- Eight passing API/export checks and a successful production deployment.
+- Nine passing API/export checks and a successful production deployment.
 - Verified deployed search, pagination, variants, thumbnails, CORS and read-only access.
 
 The export is bigger than the original source folder because it includes
@@ -104,11 +104,12 @@ Restart/rebuild after changing an environment override. Select **Dummy** in the
 navbar to use this API. Production still defaults to Live mode; the public API
 default also makes Dummy available there without requiring the dataset files.
 
-Before using a deployed storefront origin, add it to `ALLOWED_ORIGINS` in
+The live storefront `https://luxar-vtryon.vercel.app` and local development
+origins are configured. Before using another storefront origin, add it to `ALLOWED_ORIGINS` in
 `wrangler.jsonc`, keeping the localhost entries if you still need them:
 
 ```json
-"ALLOWED_ORIGINS": "http://localhost:5173,http://127.0.0.1:5173,https://YOUR-STOREFRONT-DOMAIN"
+"ALLOWED_ORIGINS": "http://localhost:5173,http://127.0.0.1:5173,https://luxar-vtryon.vercel.app,https://YOUR-STOREFRONT-DOMAIN"
 ```
 
 Use origins without paths or trailing slashes. Redeploy the Worker after changing
